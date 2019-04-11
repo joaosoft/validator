@@ -204,7 +204,7 @@ func (v *ValidatorContext) do(value reflect.Value, errs *[]error) error {
 				continue
 			}
 
-			if err := v.do(nextValue, errs); err != nil {
+			if err := v.do(key, errs); err != nil {
 				if !v.validator.validateAll {
 					return err
 				}
