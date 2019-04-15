@@ -521,7 +521,13 @@ func (v *Validator) validate_error(context *ValidatorContext, validationData *Va
 			continue
 		}
 		if v.errorCodeHandler != nil {
-			if matched, err := regexp.MatchString(ConstRegexForTagValue, validationData.Expected.(string)); err != nil {
+			var expected string
+
+			if validationData.Expected != nil {
+				expected = validationData.Expected.(string)
+			}
+
+			if matched, err := regexp.MatchString(ConstRegexForTagValue, expected); err != nil {
 				rtnErrs = append(rtnErrs, err)
 			} else {
 				if matched {
