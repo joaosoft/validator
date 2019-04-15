@@ -34,11 +34,6 @@ type BeforeTagHandler func(context *ValidatorContext, validationData *Validation
 type MiddleTagHandler func(context *ValidatorContext, validationData *ValidationData) []error
 type AfterTagHandler func(context *ValidatorContext, validationData *ValidationData) []error
 
-type Error struct {
-	Code    string `json:"code"`
-	Message string `json:"message"`
-}
-
 type ValidatorContext struct {
 	validator *Validator
 	Values    map[string]*Data

@@ -10,7 +10,6 @@ import (
 	"strings"
 	"unicode"
 
-	"encoding/json"
 	"errors"
 
 	"github.com/satori/go.uuid"
@@ -569,11 +568,7 @@ func (v *Validator) validate_error(context *ValidatorContext, validationData *Va
 						}
 					}
 				} else {
-					messageBytes, _ := json.Marshal(Error{
-						Code:    fmt.Sprintf("%+v", validationData.Expected),
-						Message: (*validationData.Errors)[i].Error(),
-					})
-					newErr := errors.New(string(messageBytes))
+					newErr := errors.New(expected)
 					(*validationData.Errors)[i] = newErr
 					validationData.ErrorsReplaced[newErr] = true
 				}
