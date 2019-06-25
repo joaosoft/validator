@@ -365,7 +365,7 @@ func (v *Validator) validate_isnull(context *ValidatorContext, validationData *V
 
 	if (validationData.Value.Kind() != reflect.Ptr && validationData.Value.Interface() != nil) ||
 		(validationData.Value.Kind() == reflect.Ptr && !validationData.Value.IsNil()) {
-		err := fmt.Errorf("the value should be null on field [%s] instead of [%+v]", validationData.Name, validationData.Value)
+		err := fmt.Errorf("the value should be null on field [%s] instead of [%+v]", validationData.Name, validationData.Value.Elem())
 		rtnErrs = append(rtnErrs, err)
 	}
 

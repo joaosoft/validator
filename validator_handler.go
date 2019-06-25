@@ -159,15 +159,11 @@ func (v *ValidatorContext) do(value reflect.Value, errs *[]error) error {
 			nextValue := value.Field(i)
 			nextType := types.Field(i)
 
-			if nextValue.Kind() == reflect.Ptr && !nextValue.IsNil() {
-				nextValue = nextValue.Elem()
-			}
-
 			if !nextValue.CanInterface() {
 				continue
 			}
 
-			if err := v.doValidate(nextValue, nextType, value, errs); err != nil {
+			if err := v.doValidate(nextValue, nextType, errs); err != nil {
 
 				if !v.validator.validateAll {
 					return err
@@ -222,7 +218,7 @@ func (v *ValidatorContext) do(value reflect.Value, errs *[]error) error {
 	return nil
 }
 
-func (v *ValidatorContext) doValidate(value reflect.Value, typ reflect.StructField, mutable reflect.Value, errs *[]error) error {
+func (v *ValidatorContext) doValidate(value reflect.Value, typ reflect.StructField, errs *[]error) error {
 
 	tag, exists := typ.Tag.Lookup(v.validator.tag)
 	if !exists {
