@@ -47,10 +47,6 @@ func (v *ValidatorContext) load(value reflect.Value, errs *[]error) error {
 			nextValue := value.Field(i)
 			nextType := types.Field(i)
 
-			if nextValue.Kind() == reflect.Ptr && !nextValue.IsNil() {
-				nextValue = nextValue.Elem()
-			}
-
 			if !nextValue.CanInterface() {
 				continue
 			}
@@ -373,10 +369,6 @@ func (v *ValidatorContext) execute(typ reflect.StructField, value reflect.Value,
 			case reflect.Struct:
 				for i := 0; i < types.NumField(); i++ {
 					nextValue := value.Field(i)
-
-					if nextValue.Kind() == reflect.Ptr && !nextValue.IsNil() {
-						nextValue = nextValue.Elem()
-					}
 
 					if !nextValue.CanInterface() {
 						continue
