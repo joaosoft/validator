@@ -958,3 +958,15 @@ func (v *Validator) validate_encode(context *ValidatorContext, validationData *V
 
 	return rtnErrs
 }
+
+func (v *Validator) validate_args(context *ValidatorContext, validationData *ValidationData) []error {
+	rtnErrs := make([]error, 0)
+
+	args := strings.Split(validationData.Expected.(string), ";")
+
+	for _, arg := range args {
+		validationData.Arguments = append(validationData.Arguments, arg)
+	}
+
+	return rtnErrs
+}

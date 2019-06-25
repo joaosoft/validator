@@ -39,10 +39,14 @@ type ValidatorContext struct {
 	Values    map[string]*Data
 }
 
+type BaseData struct {
+	Id        string
+	Arguments []interface{}
+}
+
 type ValidationData struct {
-	Id             string
+	*BaseData
 	Code           string
-	Arguments      []interface{}
 	Field          string
 	Parent         reflect.Value
 	Value          reflect.Value

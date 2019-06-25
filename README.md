@@ -35,6 +35,7 @@ with values ("the field id", "the field value", trim, title, upper, lower, key),
 * item:<< command >>> (allows you to validate array or map items individually, [example: "item:size=10", means that the array items need to have the size of 10])
 * key:<< command >>> (allows you to validate a map key's individually, [example: "key:size=10", means that the map key's need to have the size of 10])
 * encode ([example: "encode=md5"])
+* args (arguments that will be available on callbacks ValidationData struct)
 
 ## With methods for
 * AddBefore (add a before-validation)

@@ -105,6 +105,7 @@ type Example2 struct {
 	IsNill            *string `validate:"notzero, error={ErrorTag17}"`
 	Sanitize          string  `validate:"sanitize=a;b;teste, error={ErrorTag17}"`
 	Callback          string  `validate:"callback=dummy_callback, error={ErrorTag19}"`
+	CallbackArgs      string  `validate:"args=a;b;c, callback=dummy_args_callback"`
 	Password          string  `json:"password" validate:"id=password"`
 	PasswordConfirm   string  `validate:"value={password}"`
 }
@@ -124,6 +125,7 @@ func init() {
 		SetValidateAll(true).
 		SetErrorCodeHandler(dummy_error_handler).
 		AddCallback("dummy_callback", dummy_callback).
+		AddCallback("dummy_args_callback", dummy_args_callback).
 		AddCallback("dummy_callback_2", dummy_callback)
 }
 
@@ -171,6 +173,11 @@ var dummy_error_handler = func(context *validator.ValidatorContext, validationDa
 
 var dummy_callback = func(context *validator.ValidatorContext, validationData *validator.ValidationData) []error {
 	return []error{errors.New("there's a bug here!")}
+}
+
+var dummy_args_callback = func(context *validator.ValidatorContext, validationData *validator.ValidationData) []error {
+	fmt.Printf("\nthere are the following arguments %+v!", validationData.Arguments)
+	return nil
 }
 
 func main() {

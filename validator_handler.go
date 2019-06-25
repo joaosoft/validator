@@ -252,7 +252,10 @@ func (v *ValidatorContext) execute(typ reflect.StructField, value reflect.Value,
 	var itErrs []error
 	var replacedErrors = make(map[error]bool)
 
-	id := v.getFieldId(validations)
+	baseData := &BaseData{
+		Id:        v.getFieldId(validations),
+		Arguments: make([]interface{}, 0),
+	}
 
 	for _, validation := range validations {
 		var name string
@@ -322,7 +325,7 @@ func (v *ValidatorContext) execute(typ reflect.StructField, value reflect.Value,
 					}
 
 					validationData := ValidationData{
-						Id:             id,
+						BaseData:       baseData,
 						Name:           name,
 						Field:          typ.Name,
 						Parent:         value,
@@ -355,7 +358,7 @@ func (v *ValidatorContext) execute(typ reflect.StructField, value reflect.Value,
 					}
 
 					validationData := ValidationData{
-						Id:             id,
+						BaseData:       baseData,
 						Name:           name,
 						Field:          typ.Name,
 						Parent:         value,
@@ -384,7 +387,7 @@ func (v *ValidatorContext) execute(typ reflect.StructField, value reflect.Value,
 					}
 
 					validationData := ValidationData{
-						Id:             id,
+						BaseData:       baseData,
 						Name:           name,
 						Field:          typ.Name,
 						Parent:         value,
@@ -413,7 +416,7 @@ func (v *ValidatorContext) execute(typ reflect.StructField, value reflect.Value,
 			}
 
 			validationData := ValidationData{
-				Id:             id,
+				BaseData:       baseData,
 				Name:           name,
 				Field:          typ.Name,
 				Parent:         value,

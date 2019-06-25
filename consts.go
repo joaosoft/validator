@@ -57,4 +57,5 @@ const (
 	ConstTagBool     = "bool"
 	ConstTagDecode   = "decode"
 	ConstTagEncode   = "encode"
+	ConstTagArgs     = "args"
 )
