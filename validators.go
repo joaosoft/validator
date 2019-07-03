@@ -15,6 +15,17 @@ import (
 	"github.com/satori/go.uuid"
 )
 
+func (v *Validator) getValue(value reflect.Value) (isNull bool, _ reflect.Value, _ interface{}) {
+	if value.Kind() == reflect.Ptr {
+		if value.IsNil() {
+			return true, value, value.Interface()
+		}
+		return value.Elem().Interface() == nil, value.Elem(), value.Elem().Interface()
+	}
+
+	return value.Interface() == nil, value, value.Interface()
+}
+
 func (v *Validator) loadExpectedValue(context *ValidatorContext, expected interface{}) (string, error) {
 	newExpected := fmt.Sprintf("%+v", expected)
 	if matched, err := regexp.MatchString(ConstRegexForTagValue, newExpected); err != nil {
@@ -33,7 +44,8 @@ func (v *Validator) loadExpectedValue(context *ValidatorContext, expected interf
 func (v *Validator) validate_value(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
-	if fmt.Sprintf("%+v", validationData.Value) == "" || (validationData.Value.Kind() == reflect.Ptr && validationData.Value.IsNil()) {
+	isNull, _, value := v.getValue(validationData.Value)
+	if isNull || fmt.Sprintf("%+v", value) == "" {
 		return rtnErrs
 	}
 
@@ -43,8 +55,8 @@ func (v *Validator) validate_value(context *ValidatorContext, validationData *Va
 		return rtnErrs
 	}
 
-	if fmt.Sprintf("%+v", validationData.Value) != expected {
-		err := fmt.Errorf("the value [%+v] is different of the expected [%+v] on field [%s] value [%+v]", validationData.Value, expected, validationData.Name, validationData.Value)
+	if fmt.Sprintf("%+v", value) != expected {
+		err := fmt.Errorf("the value [%+v] is different of the expected [%+v] on field [%s]", value, expected, validationData.Name)
 		rtnErrs = append(rtnErrs, err)
 	}
 
@@ -54,11 +66,12 @@ func (v *Validator) validate_value(context *ValidatorContext, validationData *Va
 func (v *Validator) validate_sanitize(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
-	if fmt.Sprintf("%+v", validationData.Value) == "" || (validationData.Value.Kind() == reflect.Ptr && validationData.Value.IsNil()) {
+	isNull, _, value := v.getValue(validationData.Value)
+	if isNull || fmt.Sprintf("%+v", value) == "" {
 		return rtnErrs
 	}
 
-	val := fmt.Sprintf("%+v", validationData.Value)
+	val := fmt.Sprintf("%+v", value)
 	split := strings.Split(validationData.Expected.(string), ";")
 	invalid := make([]string, 0)
 
@@ -77,7 +90,7 @@ func (v *Validator) validate_sanitize(context *ValidatorContext, validationData 
 	}
 
 	if len(invalid) > 0 {
-		err := fmt.Errorf("the value [%+v] is has invalid characters [%+v] on field [%s]", validationData.Value, strings.Join(invalid, ","), validationData.Name)
+		err := fmt.Errorf("the value [%+v] is has invalid characters [%+v] on field [%s]", value, strings.Join(invalid, ","), validationData.Name)
 		rtnErrs = append(rtnErrs, err)
 	}
 
@@ -87,7 +100,8 @@ func (v *Validator) validate_sanitize(context *ValidatorContext, validationData 
 func (v *Validator) validate_not(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
-	if fmt.Sprintf("%+v", validationData.Value) == "" || (validationData.Value.Kind() == reflect.Ptr && validationData.Value.IsNil()) {
+	isNull, _, value := v.getValue(validationData.Value)
+	if isNull || fmt.Sprintf("%+v", value) == "" {
 		return rtnErrs
 	}
 
@@ -97,8 +111,8 @@ func (v *Validator) validate_not(context *ValidatorContext, validationData *Vali
 		return rtnErrs
 	}
 
-	if fmt.Sprintf("%+v", validationData.Value) == fmt.Sprintf("%+v", expected) {
-		err := fmt.Errorf("the expected [%+v] should be different of the [%+v] on field [%s]", expected, validationData.Value, validationData.Name)
+	if fmt.Sprintf("%+v", value) == fmt.Sprintf("%+v", expected) {
+		err := fmt.Errorf("the expected [%+v] should be different of the [%+v] on field [%s]", expected, value, validationData.Name)
 		rtnErrs = append(rtnErrs, err)
 	}
 
@@ -108,14 +122,15 @@ func (v *Validator) validate_not(context *ValidatorContext, validationData *Vali
 func (v *Validator) validate_options(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
-	if fmt.Sprintf("%+v", validationData.Value) == "" || (validationData.Value.Kind() == reflect.Ptr && validationData.Value.IsNil()) {
+	isNull, obj, value := v.getValue(validationData.Value)
+	if isNull || fmt.Sprintf("%+v", value) == "" {
 		return rtnErrs
 	}
 
 	options := strings.Split(validationData.Expected.(string), ";")
 	var invalidValue interface{}
 
-	switch validationData.Value.Kind() {
+	switch obj.Kind() {
 	case reflect.Array, reflect.Slice:
 		var err error
 		optionsVal := make(map[string]bool)
@@ -132,8 +147,8 @@ func (v *Validator) validate_options(context *ValidatorContext, validationData *
 			optionsVal[option] = true
 		}
 
-		for i := 0; i < validationData.Value.Len(); i++ {
-			nextValue := validationData.Value.Index(i)
+		for i := 0; i < obj.Len(); i++ {
+			nextValue := obj.Index(i)
 
 			if !nextValue.CanInterface() {
 				continue
@@ -172,8 +187,8 @@ func (v *Validator) validate_options(context *ValidatorContext, validationData *
 			optionsMap[values[0]] = values[1]
 		}
 
-		for _, key := range validationData.Value.MapKeys() {
-			nextValue := validationData.Value.MapIndex(key)
+		for _, key := range obj.MapKeys() {
+			nextValue := obj.MapIndex(key)
 
 			if !nextValue.CanInterface() {
 				continue
@@ -206,9 +221,9 @@ func (v *Validator) validate_options(context *ValidatorContext, validationData *
 			optionsVal[option] = true
 		}
 
-		_, ok := optionsVal[fmt.Sprintf("%+v", validationData.Value)]
+		_, ok := optionsVal[fmt.Sprintf("%+v", value)]
 		if !ok {
-			invalidValue = validationData.Value
+			invalidValue = value
 			err := fmt.Errorf("the value [%+v] is different of the expected options [%+v] on field [%s]", invalidValue, validationData.Expected, validationData.Name)
 			rtnErrs = append(rtnErrs, err)
 		}
@@ -220,6 +235,7 @@ func (v *Validator) validate_options(context *ValidatorContext, validationData *
 func (v *Validator) validate_size(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
+	isNull, obj, value := v.getValue(validationData.Value)
 	expected, err := v.loadExpectedValue(context, validationData.Expected)
 	if err != nil {
 		rtnErrs = append(rtnErrs, err)
@@ -228,33 +244,33 @@ func (v *Validator) validate_size(context *ValidatorContext, validationData *Val
 
 	size, e := strconv.Atoi(expected)
 	if e != nil {
-		err := fmt.Errorf("the size [%s] is invalid on field [%s] value [%+v]", expected, validationData.Name, validationData.Value)
+		err := fmt.Errorf("the size [%s] is invalid on field [%s] value [%+v]", expected, validationData.Name, value)
 		rtnErrs = append(rtnErrs, err)
 		return rtnErrs
 	}
 
 	var valueSize int64
 
-	switch validationData.Value.Kind() {
+	switch obj.Kind() {
 	case reflect.Array, reflect.Slice, reflect.Map:
-		valueSize = int64(validationData.Value.Len())
+		valueSize = int64(obj.Len())
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		valueSize = int64(len(strings.TrimSpace(strconv.Itoa(int(validationData.Value.Int())))))
+		valueSize = int64(len(strings.TrimSpace(strconv.Itoa(int(obj.Int())))))
 	case reflect.Float32, reflect.Float64:
-		valueSize = int64(len(strings.TrimSpace(strconv.FormatFloat(validationData.Value.Float(), 'g', 1, 64))))
+		valueSize = int64(len(strings.TrimSpace(strconv.FormatFloat(obj.Float(), 'g', 1, 64))))
 	case reflect.String:
-		valueSize = int64(len(strings.TrimSpace(validationData.Value.String())))
+		valueSize = int64(len(strings.TrimSpace(obj.String())))
 	case reflect.Bool:
-		valueSize = int64(len(strings.TrimSpace(strconv.FormatBool(validationData.Value.Bool()))))
+		valueSize = int64(len(strings.TrimSpace(strconv.FormatBool(obj.Bool()))))
 	default:
-		if validationData.Value.Kind() == reflect.Ptr && validationData.Value.IsNil() {
+		if isNull {
 			break
 		}
-		valueSize = int64(len(strings.TrimSpace(validationData.Value.String())))
+		valueSize = int64(len(strings.TrimSpace(obj.String())))
 	}
 
 	if valueSize != int64(size) {
-		err := fmt.Errorf("the length [%+v] is lower then the expected [%+v] on field [%s] value [%+v]", valueSize, expected, validationData.Name, validationData.Value)
+		err := fmt.Errorf("the length [%+v] is lower then the expected [%+v] on field [%s] value [%+v]", valueSize, expected, validationData.Name, value)
 		rtnErrs = append(rtnErrs, err)
 	}
 
@@ -270,35 +286,36 @@ func (v *Validator) validate_min(context *ValidatorContext, validationData *Vali
 		return rtnErrs
 	}
 
+	isNull, obj, value := v.getValue(validationData.Value)
 	min, e := strconv.Atoi(expected)
 	if e != nil {
-		err := fmt.Errorf("the size [%s] is invalid on field [%s] value [%+v]", expected, validationData.Name, validationData.Value)
+		err := fmt.Errorf("the size [%s] is invalid on field [%s] value [%+v]", expected, validationData.Name, value)
 		rtnErrs = append(rtnErrs, err)
 		return rtnErrs
 	}
 
 	var valueSize int64
 
-	switch validationData.Value.Kind() {
+	switch obj.Kind() {
 	case reflect.Array, reflect.Slice, reflect.Map:
-		valueSize = int64(validationData.Value.Len())
+		valueSize = int64(obj.Len())
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		valueSize = validationData.Value.Int()
+		valueSize = obj.Int()
 	case reflect.Float32, reflect.Float64:
-		valueSize = int64(validationData.Value.Float())
+		valueSize = int64(obj.Float())
 	case reflect.String:
-		valueSize = int64(len(strings.TrimSpace(validationData.Value.String())))
+		valueSize = int64(len(strings.TrimSpace(obj.String())))
 	case reflect.Bool:
-		valueSize = int64(len(strings.TrimSpace(strconv.FormatBool(validationData.Value.Bool()))))
+		valueSize = int64(len(strings.TrimSpace(strconv.FormatBool(obj.Bool()))))
 	default:
-		if validationData.Value.Kind() == reflect.Ptr && validationData.Value.IsNil() {
+		if isNull {
 			break
 		}
-		valueSize = int64(len(strings.TrimSpace(validationData.Value.String())))
+		valueSize = int64(len(strings.TrimSpace(obj.String())))
 	}
 
 	if valueSize < int64(min) {
-		err := fmt.Errorf("the length [%+v] is lower then the expected [%+v] on field [%s] value [%+v]", valueSize, expected, validationData.Name, validationData.Value)
+		err := fmt.Errorf("the length [%+v] is lower then the expected [%+v] on field [%s] value [%+v]", valueSize, expected, validationData.Name, value)
 		rtnErrs = append(rtnErrs, err)
 	}
 
@@ -314,35 +331,36 @@ func (v *Validator) validate_max(context *ValidatorContext, validationData *Vali
 		return rtnErrs
 	}
 
+	isNull, obj, value := v.getValue(validationData.Value)
 	max, e := strconv.Atoi(expected)
 	if e != nil {
-		err := fmt.Errorf("the size [%s] is invalid on field [%s] value [%+v]", validationData.Expected, validationData.Name, validationData.Value)
+		err := fmt.Errorf("the size [%s] is invalid on field [%s] value [%+v]", validationData.Expected, validationData.Name, value)
 		rtnErrs = append(rtnErrs, err)
 		return rtnErrs
 	}
 
 	var valueSize int64
 
-	switch validationData.Value.Kind() {
+	switch obj.Kind() {
 	case reflect.Array, reflect.Slice, reflect.Map:
-		valueSize = int64(validationData.Value.Len())
+		valueSize = int64(obj.Len())
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		valueSize = validationData.Value.Int()
+		valueSize = obj.Int()
 	case reflect.Float32, reflect.Float64:
-		valueSize = int64(validationData.Value.Float())
+		valueSize = int64(obj.Float())
 	case reflect.String:
-		valueSize = int64(len(strings.TrimSpace(validationData.Value.String())))
+		valueSize = int64(len(strings.TrimSpace(obj.String())))
 	case reflect.Bool:
-		valueSize = int64(len(strings.TrimSpace(strconv.FormatBool(validationData.Value.Bool()))))
+		valueSize = int64(len(strings.TrimSpace(strconv.FormatBool(obj.Bool()))))
 	default:
-		if validationData.Value.Kind() == reflect.Ptr && validationData.Value.IsNil() {
+		if isNull {
 			break
 		}
-		valueSize = int64(len(strings.TrimSpace(validationData.Value.String())))
+		valueSize = int64(len(strings.TrimSpace(obj.String())))
 	}
 
 	if valueSize > int64(max) {
-		err := fmt.Errorf("the length [%+v] is bigger then the expected [%+v] on field [%s] value [%+v]", valueSize, expected, validationData.Name, validationData.Value)
+		err := fmt.Errorf("the length [%+v] is bigger then the expected [%+v] on field [%s] value [%+v]", valueSize, expected, validationData.Name, value)
 		rtnErrs = append(rtnErrs, err)
 	}
 
@@ -363,9 +381,9 @@ func (v *Validator) validate_notzero(context *ValidatorContext, validationData *
 func (v *Validator) validate_isnull(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
-	if (validationData.Value.Kind() != reflect.Ptr && validationData.Value.Interface() != nil) ||
-		(validationData.Value.Kind() == reflect.Ptr && !validationData.Value.IsNil()) {
-		err := fmt.Errorf("the value should be null on field [%s] instead of [%+v]", validationData.Name, validationData.Value.Elem())
+	isNull, _, value := v.getValue(validationData.Value)
+	if !isNull {
+		err := fmt.Errorf("the value should be null on field [%s] instead of [%+v]", validationData.Name, value)
 		rtnErrs = append(rtnErrs, err)
 	}
 
@@ -388,38 +406,39 @@ func (v *Validator) validate_iszero(context *ValidatorContext, validationData *V
 
 	var isZero bool
 
-	switch validationData.Value.Kind() {
+	isNull, obj, value := v.getValue(validationData.Value)
+	switch obj.Kind() {
 	case reflect.Array, reflect.Slice, reflect.Map:
 
-		switch validationData.Value.Type() {
+		switch obj.Type() {
 		case reflect.TypeOf(uuid.UUID{}):
-			if validationData.Value.Interface().(uuid.UUID) == uuid.Nil {
+			if value.(uuid.UUID) == uuid.Nil {
 				isZero = true
 			}
 		default:
-			isZero = validationData.Value.Len() == 0
+			isZero = obj.Len() == 0
 		}
 
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		isZero = validationData.Value.Int() == 0
+		isZero = obj.Int() == 0
 	case reflect.Float32, reflect.Float64:
-		isZero = validationData.Value.Float() == 0
+		isZero = obj.Float() == 0
 	case reflect.String:
-		isZero = len(strings.TrimSpace(validationData.Value.String())) == 0
+		isZero = len(strings.TrimSpace(obj.String())) == 0
 	case reflect.Bool:
-		isZero = validationData.Value.Bool() == false
+		isZero = obj.Bool() == false
 	case reflect.Struct:
-		if validationData.Value.Interface() == reflect.Zero(validationData.Value.Type()).Interface() {
+		if value == reflect.Zero(obj.Type()).Interface() {
 			isZero = true
 		}
 	default:
-		if validationData.Value.Kind() == reflect.Ptr && validationData.Value.IsNil() {
+		if isNull {
 			isZero = true
 		}
 	}
 
 	if !isZero {
-		err := fmt.Errorf("the value should be zero on field [%s] instead of [%+v]", validationData.Name, validationData.Value)
+		err := fmt.Errorf("the value should be zero on field [%s] instead of [%+v]", validationData.Name, value)
 		rtnErrs = append(rtnErrs, err)
 	}
 
@@ -430,11 +449,9 @@ func (v *Validator) validate_regex(context *ValidatorContext, validationData *Va
 
 	rtnErrs := make([]error, 0)
 
-	if validationData.Value.Kind() == reflect.Ptr && validationData.Value.IsNil() {
-		return rtnErrs
-	}
-
-	if fmt.Sprintf("%+v", validationData.Value) == "" || (validationData.Value.Kind() == reflect.Ptr && validationData.Value.IsNil()) {
+	isNull, _, value := v.getValue(validationData.Value)
+	val := fmt.Sprintf("%+v", value)
+	if isNull || val == "" {
 		return rtnErrs
 	}
 
@@ -444,9 +461,9 @@ func (v *Validator) validate_regex(context *ValidatorContext, validationData *Va
 		return rtnErrs
 	}
 
-	if len(fmt.Sprintf("%+v", validationData.Value)) > 0 {
-		if !r.MatchString(fmt.Sprintf("%+v", validationData.Value)) {
-			err := fmt.Errorf("invalid data [%s] on field [%+v] value [%+v]", validationData.Value, validationData.Name, validationData.Value)
+	if len(val) > 0 {
+		if !r.MatchString(val) {
+			err := fmt.Errorf("invalid value [%s] on field [%+v]", value, validationData.Name)
 			rtnErrs = append(rtnErrs, err)
 		}
 	}
@@ -458,7 +475,9 @@ func (v *Validator) validate_special(context *ValidatorContext, validationData *
 
 	rtnErrs := make([]error, 0)
 
-	if fmt.Sprintf("%+v", validationData.Value) == "" || (validationData.Value.Kind() == reflect.Ptr && validationData.Value.IsNil()) {
+	isNull, _, value := v.getValue(validationData.Value)
+	strValue := fmt.Sprintf("%+v", value)
+	if isNull || strValue == "" {
 		return rtnErrs
 	}
 
@@ -478,7 +497,7 @@ func (v *Validator) validate_special(context *ValidatorContext, validationData *
 	case ConstSpecialTagForEmail:
 		validationData.Expected = ConstRegexForEmail
 	default:
-		err := fmt.Errorf("invalid special [%s] on field [%+v] value [%+v]", validationData.Expected, validationData.Name, validationData.Value)
+		err := fmt.Errorf("invalid special [%s] on field [%+v] value [%+v]", validationData.Expected, validationData.Name, value)
 		rtnErrs = append(rtnErrs, err)
 		return rtnErrs
 	}
@@ -685,7 +704,8 @@ func (v *Validator) validate_if(context *ValidatorContext, validationData *Valid
 func (v *Validator) validate_set(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
-	if !validationData.Value.CanAddr() {
+	_, obj, value := v.getValue(validationData.Value)
+	if !obj.CanAddr() {
 		err := fmt.Errorf("the object should be passed as a pointer! when validating field [%+v]", validationData.Name)
 		rtnErrs = append(rtnErrs, err)
 		return rtnErrs
@@ -699,7 +719,7 @@ func (v *Validator) validate_set(context *ValidatorContext, validationData *Vali
 		if matched {
 			replacer := strings.NewReplacer("{", "", "}", "")
 			id := replacer.Replace(newExpected)
-			validationData.Expected = validationData.Value.Interface()
+			validationData.Expected = value
 
 			switch id {
 			case ConstSetTagForTrim:
@@ -714,8 +734,8 @@ func (v *Validator) validate_set(context *ValidatorContext, validationData *Vali
 				v.set_key(context, validationData)
 			default:
 				if newValue, ok := context.Values[id]; ok {
-					value := validationData.Value.FieldByName(validationData.Field)
-					kind := reflect.TypeOf(value.Interface()).Kind()
+					value := obj.FieldByName(validationData.Field)
+					kind := reflect.TypeOf(value).Kind()
 
 					setValue(kind, value, newValue.Obj.Interface())
 				} else {
@@ -725,8 +745,8 @@ func (v *Validator) validate_set(context *ValidatorContext, validationData *Vali
 				}
 			}
 		} else {
-			kind := reflect.TypeOf(validationData.Value.Interface()).Kind()
-			setValue(kind, validationData.Value, validationData.Expected)
+			kind := reflect.TypeOf(value).Kind()
+			setValue(kind, obj, validationData.Expected)
 		}
 	}
 
@@ -736,8 +756,9 @@ func (v *Validator) validate_set(context *ValidatorContext, validationData *Vali
 func (v *Validator) set_key(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
-	if validationData.Value.CanAddr() {
-		kind := reflect.TypeOf(validationData.Value.Interface()).Kind()
+	_, obj, value := v.getValue(validationData.Value)
+	if obj.CanAddr() {
+		kind := reflect.TypeOf(value).Kind()
 
 		switch kind {
 		case reflect.String:
@@ -747,7 +768,7 @@ func (v *Validator) set_key(context *ValidatorContext, validationData *Validatio
 				return rtnErrs
 			}
 
-			setValue(kind, validationData.Value, convertToKey(strings.TrimSpace(expected), true))
+			setValue(kind, obj, convertToKey(strings.TrimSpace(expected), true))
 		}
 	}
 
@@ -773,20 +794,22 @@ func setValue(kind reflect.Kind, obj reflect.Value, newValue interface{}) {
 func (v *Validator) validate_distinct(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
-	if validationData.Parent.CanAddr() {
-		kind := reflect.TypeOf(validationData.Parent.Interface()).Kind()
+	_, parentObj, parentValue := v.getValue(validationData.Parent)
+
+	if parentObj.CanAddr() {
+		kind := reflect.TypeOf(parentValue).Kind()
 
 		if kind != reflect.Array && kind != reflect.Slice {
 			return rtnErrs
 		}
-		newInstance := reflect.New(validationData.Parent.Type()).Elem()
+		newInstance := reflect.New(parentObj.Type()).Elem()
 
 		values := make(map[interface{}]bool)
-		for i := 0; i < validationData.Parent.Len(); i++ {
+		for i := 0; i < parentObj.Len(); i++ {
 
-			indexValue := validationData.Parent.Index(i)
+			indexValue := parentObj.Index(i)
 			if indexValue.Kind() == reflect.Ptr && !indexValue.IsNil() {
-				indexValue = validationData.Parent.Index(i).Elem()
+				indexValue = parentObj.Index(i).Elem()
 			}
 
 			if _, ok := values[indexValue.Interface()]; ok {
@@ -798,7 +821,7 @@ func (v *Validator) validate_distinct(context *ValidatorContext, validationData 
 				reflect.Float32, reflect.Float64,
 				reflect.String,
 				reflect.Bool:
-				if validationData.Parent.Index(i).Kind() == reflect.Ptr && !validationData.Parent.Index(i).IsNil() {
+				if parentObj.Index(i).Kind() == reflect.Ptr && !parentObj.Index(i).IsNil() {
 					newInstance = reflect.Append(newInstance, indexValue.Addr())
 				} else {
 					newInstance = reflect.Append(newInstance, indexValue)
@@ -809,7 +832,7 @@ func (v *Validator) validate_distinct(context *ValidatorContext, validationData 
 		}
 
 		// set the new instance without duplicated values
-		validationData.Parent.Set(newInstance)
+		parentObj.Set(newInstance)
 	}
 
 	return rtnErrs
@@ -818,15 +841,16 @@ func (v *Validator) validate_distinct(context *ValidatorContext, validationData 
 func (v *Validator) validate_alpha(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
-	expected := fmt.Sprintf("%+v", validationData.Value)
+	isNil, _, value := v.getValue(validationData.Value)
+	expected := fmt.Sprintf("%+v", value)
 
-	if expected == "" || (validationData.Value.Kind() == reflect.Ptr && validationData.Value.IsNil()) {
+	if expected == "" || isNil {
 		return rtnErrs
 	}
 
 	for _, r := range expected {
 		if !unicode.IsLetter(r) {
-			err := fmt.Errorf("the value [%+v] is invalid for type alphanumeric on field [%s] value [%+v]", expected, validationData.Name, validationData.Value)
+			err := fmt.Errorf("the value [%+v] is invalid for type alphanumeric on field [%s] value [%+v]", expected, validationData.Name, value)
 			rtnErrs = append(rtnErrs, err)
 			break
 		}
@@ -837,15 +861,17 @@ func (v *Validator) validate_alpha(context *ValidatorContext, validationData *Va
 
 func (v *Validator) validate_numeric(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
-	expected := fmt.Sprintf("%+v", validationData.Value)
 
-	if expected == "" || (validationData.Value.Kind() == reflect.Ptr && validationData.Value.IsNil()) {
+	isNil, _, value := v.getValue(validationData.Value)
+	expected := fmt.Sprintf("%+v", value)
+
+	if expected == "" || isNil {
 		return rtnErrs
 	}
 
 	for _, r := range expected {
 		if !unicode.IsNumber(r) {
-			err := fmt.Errorf("the value [%+v] is invalid for type numeric on field [%s] value [%+v]", expected, validationData.Name, validationData.Value)
+			err := fmt.Errorf("the value [%+v] is invalid for type numeric on field [%s] value [%+v]", expected, validationData.Name, value)
 			rtnErrs = append(rtnErrs, err)
 			break
 		}
@@ -856,16 +882,18 @@ func (v *Validator) validate_numeric(context *ValidatorContext, validationData *
 
 func (v *Validator) validate_bool(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
-	expected := fmt.Sprintf("%+v", validationData.Value)
 
-	if expected == "" || (validationData.Value.Kind() == reflect.Ptr && validationData.Value.IsNil()) {
+	isNil, _, value := v.getValue(validationData.Value)
+	expected := fmt.Sprintf("%+v", value)
+
+	if expected == "" || isNil {
 		return rtnErrs
 	}
 
 	switch strings.ToLower(expected) {
 	case "true", "false":
 	default:
-		err := fmt.Errorf("the value [%+v] is invalid for type bool on field [%s] value [%+v]", expected, validationData.Name, validationData.Value)
+		err := fmt.Errorf("the value [%+v] is invalid for type bool on field [%s] value [%+v]", expected, validationData.Name, value)
 		rtnErrs = append(rtnErrs, err)
 	}
 
@@ -875,15 +903,17 @@ func (v *Validator) validate_bool(context *ValidatorContext, validationData *Val
 func (v *Validator) set_trim(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
-	if validationData.Value.CanAddr() {
-		kind := reflect.TypeOf(validationData.Value.Interface()).Kind()
+	_, obj, value := v.getValue(validationData.Value)
+
+	if obj.CanAddr() {
+		kind := reflect.TypeOf(value).Kind()
 
 		switch kind {
 		case reflect.String:
-			newValue := strings.TrimSpace(validationData.Value.Interface().(string))
+			newValue := strings.TrimSpace(value.(string))
 			regx := regexp.MustCompile("  +")
 			newValue = string(regx.ReplaceAll(bytes.TrimSpace([]byte(newValue)), []byte(" ")))
-			setValue(kind, validationData.Value, newValue)
+			setValue(kind, obj, newValue)
 		}
 	}
 
@@ -893,13 +923,15 @@ func (v *Validator) set_trim(context *ValidatorContext, validationData *Validati
 func (v *Validator) set_title(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
-	if validationData.Value.CanAddr() {
-		kind := reflect.TypeOf(validationData.Value.Interface()).Kind()
+	_, obj, value := v.getValue(validationData.Value)
+
+	if obj.CanAddr() {
+		kind := reflect.TypeOf(value).Kind()
 
 		switch kind {
 		case reflect.String:
-			newValue := strings.Title(validationData.Value.Interface().(string))
-			setValue(kind, validationData.Value, newValue)
+			newValue := strings.Title(value.(string))
+			setValue(kind, obj, newValue)
 		}
 	}
 
@@ -909,13 +941,15 @@ func (v *Validator) set_title(context *ValidatorContext, validationData *Validat
 func (v *Validator) set_upper(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
-	if validationData.Value.CanAddr() {
-		kind := reflect.TypeOf(validationData.Value.Interface()).Kind()
+	_, obj, value := v.getValue(validationData.Value)
+
+	if obj.CanAddr() {
+		kind := reflect.TypeOf(value).Kind()
 
 		switch kind {
 		case reflect.String:
-			newValue := strings.ToUpper(validationData.Value.Interface().(string))
-			setValue(kind, validationData.Value, newValue)
+			newValue := strings.ToUpper(value.(string))
+			setValue(kind, obj, newValue)
 		}
 	}
 
@@ -925,13 +959,15 @@ func (v *Validator) set_upper(context *ValidatorContext, validationData *Validat
 func (v *Validator) set_lower(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
-	if validationData.Value.CanAddr() {
-		kind := reflect.TypeOf(validationData.Value.Interface()).Kind()
+	_, obj, value := v.getValue(validationData.Value)
+
+	if obj.CanAddr() {
+		kind := reflect.TypeOf(value).Kind()
 
 		switch kind {
 		case reflect.String:
-			newValue := strings.ToLower(validationData.Value.Interface().(string))
-			setValue(kind, validationData.Value, newValue)
+			newValue := strings.ToLower(value.(string))
+			setValue(kind, obj, newValue)
 		}
 	}
 
@@ -940,16 +976,18 @@ func (v *Validator) set_lower(context *ValidatorContext, validationData *Validat
 
 func (v *Validator) validate_encode(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
-	expected := fmt.Sprintf("%+v", validationData.Value)
+
+	_, obj, value := v.getValue(validationData.Value)
+	expected := fmt.Sprintf("%+v", value)
 	encoding := strings.ToLower(validationData.Expected.(string))
 
-	if validationData.Value.CanAddr() {
-		kind := reflect.TypeOf(validationData.Value.Interface()).Kind()
+	if obj.CanAddr() {
+		kind := reflect.TypeOf(value).Kind()
 
 		switch encoding {
 		case ConstEncodeMd5:
 			newValue := fmt.Sprintf("%x", md5.Sum([]byte(expected)))
-			setValue(kind, validationData.Value, newValue)
+			setValue(kind, obj, newValue)
 		default:
 			err := fmt.Errorf("the encoding [%s] is invalid on field [%s]", encoding, validationData.Name)
 			rtnErrs = append(rtnErrs, err)
