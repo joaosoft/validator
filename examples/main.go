@@ -110,7 +110,7 @@ type Example2 struct {
 	PasswordConfirm   string  `validate:"value={password}"`
 }
 
-var dummy_middle_handler = func(context *validator.ValidatorContext, validationData *validator.ValidationData) []error {
+var dummy_middle_handler = func(context *validator.ValidatorContext, validationData *validator.ValidationData, args ...interface{}) []error {
 	var rtnErrs []error
 
 	err := errors.New("dummy middle responding...")
@@ -152,7 +152,7 @@ var errs = map[string]error{
 	"ErrorTag20": errors.New("error 20"),
 	"ErrorTag21": errors.New("error 21"),
 }
-var dummy_error_handler = func(context *validator.ValidatorContext, validationData *validator.ValidationData) error {
+var dummy_error_handler = func(context *validator.ValidatorContext, validationData *validator.ValidationData, args ...interface{}) error {
 	if err, ok := errs[validationData.ErrorData.Code]; ok {
 		var regx = regexp.MustCompile(RegexForMissingParms)
 		matches := regx.FindAllStringIndex(err.Error(), -1)
@@ -171,11 +171,11 @@ var dummy_error_handler = func(context *validator.ValidatorContext, validationDa
 	return nil
 }
 
-var dummy_callback = func(context *validator.ValidatorContext, validationData *validator.ValidationData) []error {
+var dummy_callback = func(context *validator.ValidatorContext, validationData *validator.ValidationData, args ...interface{}) []error {
 	return []error{errors.New("there's a bug here!")}
 }
 
-var dummy_args_callback = func(context *validator.ValidatorContext, validationData *validator.ValidationData) []error {
+var dummy_args_callback = func(context *validator.ValidatorContext, validationData *validator.ValidationData, args ...interface{}) []error {
 	fmt.Printf("\nthere are the following arguments %+v!", validationData.Arguments)
 	return nil
 }

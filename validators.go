@@ -41,7 +41,7 @@ func (v *Validator) loadExpectedValue(context *ValidatorContext, expected interf
 	return newExpected, nil
 }
 
-func (v *Validator) validate_value(context *ValidatorContext, validationData *ValidationData) []error {
+func (v *Validator) validate_value(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
 	rtnErrs := make([]error, 0)
 
 	isNull, _, value := v.getValue(validationData.Value)
@@ -63,7 +63,7 @@ func (v *Validator) validate_value(context *ValidatorContext, validationData *Va
 	return rtnErrs
 }
 
-func (v *Validator) validate_sanitize(context *ValidatorContext, validationData *ValidationData) []error {
+func (v *Validator) validate_sanitize(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
 	rtnErrs := make([]error, 0)
 
 	isNull, _, value := v.getValue(validationData.Value)
@@ -97,7 +97,7 @@ func (v *Validator) validate_sanitize(context *ValidatorContext, validationData 
 	return rtnErrs
 }
 
-func (v *Validator) validate_not(context *ValidatorContext, validationData *ValidationData) []error {
+func (v *Validator) validate_not(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
 	rtnErrs := make([]error, 0)
 
 	isNull, _, value := v.getValue(validationData.Value)
@@ -119,7 +119,7 @@ func (v *Validator) validate_not(context *ValidatorContext, validationData *Vali
 	return rtnErrs
 }
 
-func (v *Validator) validate_options(context *ValidatorContext, validationData *ValidationData) []error {
+func (v *Validator) validate_options(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
 	rtnErrs := make([]error, 0)
 
 	isNull, obj, value := v.getValue(validationData.Value)
@@ -232,7 +232,7 @@ func (v *Validator) validate_options(context *ValidatorContext, validationData *
 	return rtnErrs
 }
 
-func (v *Validator) validate_size(context *ValidatorContext, validationData *ValidationData) []error {
+func (v *Validator) validate_size(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
 	rtnErrs := make([]error, 0)
 
 	isNull, obj, value := v.getValue(validationData.Value)
@@ -277,7 +277,7 @@ func (v *Validator) validate_size(context *ValidatorContext, validationData *Val
 	return rtnErrs
 }
 
-func (v *Validator) validate_min(context *ValidatorContext, validationData *ValidationData) []error {
+func (v *Validator) validate_min(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
 	rtnErrs := make([]error, 0)
 
 	expected, err := v.loadExpectedValue(context, validationData.Expected)
@@ -322,7 +322,7 @@ func (v *Validator) validate_min(context *ValidatorContext, validationData *Vali
 	return rtnErrs
 }
 
-func (v *Validator) validate_max(context *ValidatorContext, validationData *ValidationData) []error {
+func (v *Validator) validate_max(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
 	rtnErrs := make([]error, 0)
 
 	expected, err := v.loadExpectedValue(context, validationData.Expected)
@@ -367,7 +367,7 @@ func (v *Validator) validate_max(context *ValidatorContext, validationData *Vali
 	return rtnErrs
 }
 
-func (v *Validator) validate_notzero(context *ValidatorContext, validationData *ValidationData) []error {
+func (v *Validator) validate_notzero(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
 	rtnErrs := make([]error, 0)
 
 	if errs := v.validate_iszero(context, validationData); len(errs) == 0 {
@@ -378,7 +378,7 @@ func (v *Validator) validate_notzero(context *ValidatorContext, validationData *
 	return rtnErrs
 }
 
-func (v *Validator) validate_isnull(context *ValidatorContext, validationData *ValidationData) []error {
+func (v *Validator) validate_isnull(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
 	rtnErrs := make([]error, 0)
 
 	isNull, _, value := v.getValue(validationData.Value)
@@ -390,7 +390,7 @@ func (v *Validator) validate_isnull(context *ValidatorContext, validationData *V
 	return rtnErrs
 }
 
-func (v *Validator) validate_notnull(context *ValidatorContext, validationData *ValidationData) []error {
+func (v *Validator) validate_notnull(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
 	rtnErrs := make([]error, 0)
 
 	if errs := v.validate_isnull(context, validationData); len(errs) == 0 {
@@ -401,7 +401,7 @@ func (v *Validator) validate_notnull(context *ValidatorContext, validationData *
 	return rtnErrs
 }
 
-func (v *Validator) validate_iszero(context *ValidatorContext, validationData *ValidationData) []error {
+func (v *Validator) validate_iszero(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
 	rtnErrs := make([]error, 0)
 
 	var isZero bool
@@ -445,7 +445,7 @@ func (v *Validator) validate_iszero(context *ValidatorContext, validationData *V
 	return rtnErrs
 }
 
-func (v *Validator) validate_regex(context *ValidatorContext, validationData *ValidationData) []error {
+func (v *Validator) validate_regex(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
 
 	rtnErrs := make([]error, 0)
 
@@ -471,7 +471,7 @@ func (v *Validator) validate_regex(context *ValidatorContext, validationData *Va
 	return rtnErrs
 }
 
-func (v *Validator) validate_special(context *ValidatorContext, validationData *ValidationData) []error {
+func (v *Validator) validate_special(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
 
 	rtnErrs := make([]error, 0)
 
@@ -505,7 +505,7 @@ func (v *Validator) validate_special(context *ValidatorContext, validationData *
 	return v.validate_regex(context, validationData)
 }
 
-func (v *Validator) validate_callback(context *ValidatorContext, validationData *ValidationData) []error {
+func (v *Validator) validate_callback(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
 	rtnErrs := make([]error, 0)
 
 	validators := strings.Split(validationData.Expected.(string), ";")
@@ -531,7 +531,7 @@ type ErrorValidate struct {
 	replaced bool
 }
 
-func (v *Validator) validate_error(context *ValidatorContext, validationData *ValidationData) []error {
+func (v *Validator) validate_error(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
 	rtnErrs := make([]error, 0)
 	added := make(map[string]bool)
 	for i, e := range *validationData.Errors {
@@ -598,11 +598,11 @@ func (v *Validator) validate_error(context *ValidatorContext, validationData *Va
 	return rtnErrs
 }
 
-func (v *Validator) validate_id(context *ValidatorContext, validationData *ValidationData) []error {
+func (v *Validator) validate_id(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
 	return nil
 }
 
-func (v *Validator) validate_if(context *ValidatorContext, validationData *ValidationData) []error {
+func (v *Validator) validate_if(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
 	rtnErrs := make([]error, 0)
 
 	str := validationData.Expected.(string)
@@ -701,7 +701,7 @@ func (v *Validator) validate_if(context *ValidatorContext, validationData *Valid
 	return nil
 }
 
-func (v *Validator) validate_set(context *ValidatorContext, validationData *ValidationData) []error {
+func (v *Validator) validate_set(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
 	rtnErrs := make([]error, 0)
 
 	_, obj, value := v.getValue(validationData.Value)
@@ -753,7 +753,7 @@ func (v *Validator) validate_set(context *ValidatorContext, validationData *Vali
 	return rtnErrs
 }
 
-func (v *Validator) set_key(context *ValidatorContext, validationData *ValidationData) []error {
+func (v *Validator) set_key(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
 	rtnErrs := make([]error, 0)
 
 	_, obj, value := v.getValue(validationData.Value)
@@ -791,7 +791,7 @@ func setValue(kind reflect.Kind, obj reflect.Value, newValue interface{}) {
 	}
 }
 
-func (v *Validator) validate_distinct(context *ValidatorContext, validationData *ValidationData) []error {
+func (v *Validator) validate_distinct(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
 	rtnErrs := make([]error, 0)
 
 	_, parentObj, parentValue := v.getValue(validationData.Parent)
@@ -838,7 +838,7 @@ func (v *Validator) validate_distinct(context *ValidatorContext, validationData 
 	return rtnErrs
 }
 
-func (v *Validator) validate_alpha(context *ValidatorContext, validationData *ValidationData) []error {
+func (v *Validator) validate_alpha(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
 	rtnErrs := make([]error, 0)
 
 	isNil, _, value := v.getValue(validationData.Value)
@@ -859,7 +859,7 @@ func (v *Validator) validate_alpha(context *ValidatorContext, validationData *Va
 	return rtnErrs
 }
 
-func (v *Validator) validate_numeric(context *ValidatorContext, validationData *ValidationData) []error {
+func (v *Validator) validate_numeric(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
 	rtnErrs := make([]error, 0)
 
 	isNil, _, value := v.getValue(validationData.Value)
@@ -880,7 +880,7 @@ func (v *Validator) validate_numeric(context *ValidatorContext, validationData *
 	return rtnErrs
 }
 
-func (v *Validator) validate_bool(context *ValidatorContext, validationData *ValidationData) []error {
+func (v *Validator) validate_bool(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
 	rtnErrs := make([]error, 0)
 
 	isNil, _, value := v.getValue(validationData.Value)
@@ -900,7 +900,7 @@ func (v *Validator) validate_bool(context *ValidatorContext, validationData *Val
 	return rtnErrs
 }
 
-func (v *Validator) set_trim(context *ValidatorContext, validationData *ValidationData) []error {
+func (v *Validator) set_trim(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
 	rtnErrs := make([]error, 0)
 
 	_, obj, value := v.getValue(validationData.Value)
@@ -920,7 +920,7 @@ func (v *Validator) set_trim(context *ValidatorContext, validationData *Validati
 	return rtnErrs
 }
 
-func (v *Validator) set_title(context *ValidatorContext, validationData *ValidationData) []error {
+func (v *Validator) set_title(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
 	rtnErrs := make([]error, 0)
 
 	_, obj, value := v.getValue(validationData.Value)
@@ -938,7 +938,7 @@ func (v *Validator) set_title(context *ValidatorContext, validationData *Validat
 	return rtnErrs
 }
 
-func (v *Validator) set_upper(context *ValidatorContext, validationData *ValidationData) []error {
+func (v *Validator) set_upper(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
 	rtnErrs := make([]error, 0)
 
 	_, obj, value := v.getValue(validationData.Value)
@@ -956,7 +956,7 @@ func (v *Validator) set_upper(context *ValidatorContext, validationData *Validat
 	return rtnErrs
 }
 
-func (v *Validator) set_lower(context *ValidatorContext, validationData *ValidationData) []error {
+func (v *Validator) set_lower(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
 	rtnErrs := make([]error, 0)
 
 	_, obj, value := v.getValue(validationData.Value)
@@ -974,7 +974,7 @@ func (v *Validator) set_lower(context *ValidatorContext, validationData *Validat
 	return rtnErrs
 }
 
-func (v *Validator) validate_encode(context *ValidatorContext, validationData *ValidationData) []error {
+func (v *Validator) validate_encode(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
 	rtnErrs := make([]error, 0)
 
 	_, obj, value := v.getValue(validationData.Value)
@@ -997,12 +997,12 @@ func (v *Validator) validate_encode(context *ValidatorContext, validationData *V
 	return rtnErrs
 }
 
-func (v *Validator) validate_args(context *ValidatorContext, validationData *ValidationData) []error {
+func (v *Validator) validate_args(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
 	rtnErrs := make([]error, 0)
 
-	args := strings.Split(validationData.Expected.(string), ";")
+	splitArgs := strings.Split(validationData.Expected.(string), ";")
 
-	for _, arg := range args {
+	for _, arg := range splitArgs {
 		validationData.Arguments = append(validationData.Arguments, arg)
 	}
 

@@ -94,6 +94,6 @@ func (v *Validator) AddCallback(name string, callback CallbackHandler) *Validato
 }
 
 // MyValidate ...
-func (v *Validator) Validate(obj interface{}) []error {
-	return NewValidatorHandler(v).handleValidation(obj)
+func (v *Validator) Validate(obj interface{}, args ...interface{}) []error {
+	return NewValidatorHandler(v).handleValidation(obj, args...)
 }

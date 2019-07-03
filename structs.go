@@ -27,12 +27,12 @@ type Validator struct {
 	validateAll      bool
 }
 
-type ErrorCodeHandler func(context *ValidatorContext, validationData *ValidationData) error
-type CallbackHandler func(context *ValidatorContext, validationData *ValidationData) []error
+type ErrorCodeHandler func(context *ValidatorContext, validationData *ValidationData, args ...interface{}) error
+type CallbackHandler func(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error
 
-type BeforeTagHandler func(context *ValidatorContext, validationData *ValidationData) []error
-type MiddleTagHandler func(context *ValidatorContext, validationData *ValidationData) []error
-type AfterTagHandler func(context *ValidatorContext, validationData *ValidationData) []error
+type BeforeTagHandler func(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error
+type MiddleTagHandler func(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error
+type AfterTagHandler func(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error
 
 type ValidatorContext struct {
 	validator *Validator
