@@ -138,7 +138,8 @@ type Example struct {
 	ShouldBeNull       *string     `validate:"isnull"`
 	ShouldNotBeNull    *string     `validate:"notnull"`
 	EncodeMd5          string      `validate:"encode=md5"`
-	EncodeRandom       string      `validate:"encode=random, string=title"`
+	EnableEncodeRandom bool        `validate:"id=random_enable"`
+	EncodeRandom       string      `validate:"if=(id=random_enable value=true), encode=random, string=title"`
 	EncodeX            string      `validate:"encode=x"`
 	Interface          interface{} `validate:"notnull, notzero"`
 }
@@ -296,6 +297,7 @@ func main() {
 		TypeBool:           "ERRADO",
 		ShouldBeNull:       &str,
 		EncodeMd5:          "teste",
+		EnableEncodeRandom: true,
 		EncodeRandom:       "o meu novo teste random",
 		EncodeX:            "teste",
 		Brothers: []Example2{
