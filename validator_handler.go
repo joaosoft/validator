@@ -328,10 +328,6 @@ func (v *ValidatorContext) execute(typ reflect.StructField, value reflect.Value,
 					}
 
 					err = v.executeHandlers(tag, &validationData, &itErrs)
-
-					if !v.validator.validateAll {
-						return err
-					}
 				}
 			case reflect.Map:
 				for _, key := range value.MapKeys() {
@@ -361,10 +357,6 @@ func (v *ValidatorContext) execute(typ reflect.StructField, value reflect.Value,
 					}
 
 					err = v.executeHandlers(tag, &validationData, &itErrs)
-
-					if !v.validator.validateAll {
-						return err
-					}
 				}
 			case reflect.Struct:
 				for i := 0; i < types.NumField(); i++ {
@@ -386,10 +378,6 @@ func (v *ValidatorContext) execute(typ reflect.StructField, value reflect.Value,
 					}
 
 					err = v.executeHandlers(tag, &validationData, &itErrs)
-
-					if !v.validator.validateAll {
-						return err
-					}
 				}
 			}
 
@@ -417,6 +405,10 @@ func (v *ValidatorContext) execute(typ reflect.StructField, value reflect.Value,
 			err = v.executeHandlers(tag, &validationData, &itErrs, args...)
 		}
 
+		if err == ErrorSkipValidation {
+			return nil
+		}
+
 		if !v.validator.validateAll {
 			return err
 		}
@@ -435,7 +427,7 @@ func (v *ValidatorContext) executeHandlers(tag string, validationData *Validatio
 
 			// skip validation
 			if rtnErrs[0] == ErrorSkipValidation {
-				return nil
+				return rtnErrs[0]
 			}
 			*errs = append(*errs, rtnErrs...)
 			err = rtnErrs[0]
