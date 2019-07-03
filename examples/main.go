@@ -80,7 +80,8 @@ type Example struct {
 	ShouldBeNull       *string     `validate:"isnull"`
 	ShouldNotBeNull    *string     `validate:"notnull"`
 	EncodeMd5          string      `validate:"encode=md5"`
-	EncodeRandom       string      `validate:"encode=random, string=title"`
+	EnableEncodeRandom string      `validate:"id=random_enable"`
+	EncodeRandom       string      `validate:"if=(random_enable=true), encode=random, string=title"`
 	EncodeX            string      `validate:"encode=x"`
 	Interface          interface{} `validate:"notnull, notzero"`
 }
