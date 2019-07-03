@@ -7,36 +7,50 @@ import (
 )
 
 func (v *Validator) init() {
-	v.handlersBefore = v.NewDefaultBeforeHandlers()
-	v.handlersMiddle = v.NewDefaultMiddleHandlers()
-	v.handlersAfter = v.NewDefaultPosHandlers()
-	v.activeHandlers = v.NewActiveHandlers()
+	v.handlersBefore = v.newDefaultBeforeHandlers()
+	v.handlersMiddle = v.newDefaultMiddleHandlers()
+	v.handlersAfter = v.newDefaultPosHandlers()
+	v.activeHandlers = v.newActiveHandlers()
 
 }
 
 type Validator struct {
 	tag              string
 	activeHandlers   map[string]bool
-	handlersBefore   map[string]BeforeTagHandler
-	handlersMiddle   map[string]MiddleTagHandler
-	handlersAfter    map[string]AfterTagHandler
-	errorCodeHandler ErrorCodeHandler
-	callbacks        map[string]CallbackHandler
+	handlersBefore   map[string]beforeTagHandler
+	handlersMiddle   map[string]middleTagHandler
+	handlersAfter    map[string]afterTagHandler
+	errorCodeHandler errorCodeHandler
+	callbacks        map[string]callbackHandler
 	sanitize         []string
 	logger           logger.ILogger
 	validateAll      bool
 }
 
-type ErrorCodeHandler func(context *ValidatorContext, validationData *ValidationData, args ...interface{}) error
-type CallbackHandler func(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error
+type Argument struct {
+	Id    string
+	Value interface{}
+}
 
-type BeforeTagHandler func(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error
-type MiddleTagHandler func(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error
-type AfterTagHandler func(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error
+func NewArgument(id string, value interface{}) *Argument {
+	return &Argument{
+		Id:    id,
+		Value: value,
+	}
+}
+
+type defaultValues map[string]map[string]*data
+
+type errorCodeHandler func(context *ValidatorContext, validationData *ValidationData) error
+type callbackHandler func(context *ValidatorContext, validationData *ValidationData) []error
+
+type beforeTagHandler func(context *ValidatorContext, validationData *ValidationData) []error
+type middleTagHandler func(context *ValidatorContext, validationData *ValidationData) []error
+type afterTagHandler func(context *ValidatorContext, validationData *ValidationData) []error
 
 type ValidatorContext struct {
 	validator *Validator
-	Values    map[string]*Data
+	values    map[string]map[string]*data
 }
 
 type BaseData struct {
@@ -62,15 +76,14 @@ type ErrorData struct {
 	Arguments []interface{}
 }
 
-type Data struct {
-	Obj   reflect.Value
-	Type  reflect.StructField
-	IsSet bool
+type data struct {
+	obj reflect.Value
+	typ reflect.StructField
 }
 
-type Expression struct {
-	Data         *Data
-	Result       error
-	Expected     string
-	NextOperator Operator
+type expression struct {
+	data         *data
+	result       error
+	expected     string
+	nextOperator Operator
 }

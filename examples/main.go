@@ -27,63 +27,65 @@ type Items struct {
 }
 
 type Example struct {
-	Array              []string          `validate:"item:size=5"`
-	Array2             []string          `validate:"item:distinct"`
-	Array3             Items             `validate:"item:size=5"`
-	Map4               map[string]string `validate:"item:size=5, key:size=5"`
-	Name               string            `validate:"value=joao, dummy_middle, error={ErrorTag1:a;b}, max=10"`
-	Age                int               `validate:"value=30, error={ErrorTag99}"`
-	Street             int               `validate:"max=10, error={ErrorTag3}"`
-	Brothers           []Example2        `validate:"size=1, error={ErrorTag4}"`
-	Id                 uuid.UUID         `validate:"notzero, error={ErrorTag5}"`
-	Option1            string            `validate:"options=aa;bb;cc, error={ErrorTag6}"`
-	Option2            int               `validate:"options=11;22;33, error={ErrorTag7}"`
-	Option3            []string          `validate:"options=aa;bb;cc, error={ErrorTag8}"`
-	Option4            []int             `validate:"options=11;22;33, error={ErrorTag9}"`
-	Map1               map[string]int    `validate:"options=aa:11;bb:22;cc:33, error={ErrorTag10}"`
-	Map2               map[int]string    `validate:"options=11:aa;22:bb;33:cc, error={ErrorTag11}"`
-	SpecialTime        string            `validate:"special=time, error={ErrorTag12}"`
-	SpecialDate1       string            `validate:"special=date, error={ErrorTag13}"`
-	SpecialDate2       string            `validate:"special=YYYYMMDD, error={ErrorTag14}"`
-	SpecialDateString  *string           `validate:"special=YYYYMMDD, error={ErrorTag15}"`
-	SpecialData        *Data             `validate:"special=YYYYMMDD, error={ErrorTag16}"`
-	SpecialUrl         string            `validate:"special=url"`
-	unexported         string
-	IsNill             *string `validate:"notzero, error={ErrorTag17}"`
-	Sanitize           string  `validate:"sanitize=a;b;teste, error={ErrorTag17}"`
-	Callback           string  `validate:"callback=dummy_callback;dummy_callback_2, error={ErrorTag19}"`
-	Password           string  `json:"password" validate:"id=password"`
-	PasswordConfirm    string  `validate:"value={password}"`
-	MyName             string  `validate:"id=name"`
-	MyAge              int     `validate:"id=age"`
-	MyValidate         int     `validate:"if=(id=age value=30) or (id=age value=31) and (id=name value=joao), value=10"`
-	DoubleValidation   int     `validate:"notzero, error=20, min=5, error={ErrorTag21}"`
-	Set                int     `validate:"set=321, id=set"`
-	NextSet            NextSet
-	DistinctIntPointer []*int      `validate:"distinct"`
-	DistinctInt        []int       `validate:"distinct"`
-	DistinctString     []string    `validate:"distinct"`
-	DistinctBool       []bool      `validate:"distinct"`
-	DistinctFloat      []float32   `validate:"distinct"`
-	IsZero             int         `validate:"iszero"`
-	Trim               string      `validate:"string=trim"`
-	Lower              string      `validate:"string=lower"`
-	Upper              string      `validate:"string=upper"`
-	Key                string      `validate:"string=key"`
-	KeyValue           string      `validate:"id=my_value"`
-	KeyFromValue       string      `validate:"key={my_value}"`
-	NotMatch1          string      `validate:"id=not_match"`
-	NotMatch2          string      `validate:"not={not_match}"`
-	TypeAlpha          string      `validate:"alpha"`
-	TypeNumeric        string      `validate:"numeric"`
-	TypeBool           string      `validate:"bool"`
-	ShouldBeNull       *string     `validate:"isnull"`
-	ShouldNotBeNull    *string     `validate:"notnull"`
-	EncodeMd5          string      `validate:"encode=md5"`
-	EnableEncodeRandom bool        `validate:"id=random_enable"`
-	EncodeRandom       string      `validate:"if=(id=random_enable value=true), encode=random, string=title"`
-	EncodeX            string      `validate:"encode=x"`
-	Interface          interface{} `validate:"notnull, notzero"`
+	Array                   []string          `validate:"item:size=5"`
+	Array2                  []string          `validate:"item:distinct"`
+	Array3                  Items             `validate:"item:size=5"`
+	Map4                    map[string]string `validate:"item:size=5, key:size=5"`
+	Name                    string            `validate:"value=joao, dummy_middle, error={ErrorTag1:a;b}, max=10"`
+	Age                     int               `validate:"value=30, error={ErrorTag99}"`
+	Street                  int               `validate:"max=10, error={ErrorTag3}"`
+	Brothers                []Example2        `validate:"size=1, error={ErrorTag4}"`
+	Id                      uuid.UUID         `validate:"notzero, error={ErrorTag5}"`
+	Option1                 string            `validate:"options=aa;bb;cc, error={ErrorTag6}"`
+	Option2                 int               `validate:"options=11;22;33, error={ErrorTag7}"`
+	Option3                 []string          `validate:"options=aa;bb;cc, error={ErrorTag8}"`
+	Option4                 []int             `validate:"options=11;22;33, error={ErrorTag9}"`
+	Map1                    map[string]int    `validate:"options=aa:11;bb:22;cc:33, error={ErrorTag10}"`
+	Map2                    map[int]string    `validate:"options=11:aa;22:bb;33:cc, error={ErrorTag11}"`
+	SpecialTime             string            `validate:"special=time, error={ErrorTag12}"`
+	SpecialDate1            string            `validate:"special=date, error={ErrorTag13}"`
+	SpecialDate2            string            `validate:"special=YYYYMMDD, error={ErrorTag14}"`
+	SpecialDateString       *string           `validate:"special=YYYYMMDD, error={ErrorTag15}"`
+	SpecialData             *Data             `validate:"special=YYYYMMDD, error={ErrorTag16}"`
+	SpecialUrl              string            `validate:"special=url"`
+	unexported              string
+	IsNill                  *string `validate:"notzero, error={ErrorTag17}"`
+	Sanitize                string  `validate:"sanitize=a;b;teste, error={ErrorTag17}"`
+	Callback                string  `validate:"callback=dummy_callback;dummy_callback_2, error={ErrorTag19}"`
+	Password                string  `json:"password" validate:"id=password"`
+	PasswordConfirm         string  `validate:"value={password}"`
+	MyName                  string  `validate:"id=name"`
+	MyAge                   int     `validate:"id=age"`
+	MyValidate              int     `validate:"if=(id=age value=30) or (id=age value=31) and (id=name value=joao), value=10"`
+	DoubleValidation        int     `validate:"notzero, error=20, min=5, error={ErrorTag21}"`
+	Set                     int     `validate:"set=321, id=set"`
+	NextSet                 NextSet
+	DistinctIntPointer      []*int      `validate:"distinct"`
+	DistinctInt             []int       `validate:"distinct"`
+	DistinctString          []string    `validate:"distinct"`
+	DistinctBool            []bool      `validate:"distinct"`
+	DistinctFloat           []float32   `validate:"distinct"`
+	IsZero                  int         `validate:"iszero"`
+	Trim                    string      `validate:"string=trim"`
+	Lower                   string      `validate:"string=lower"`
+	Upper                   string      `validate:"string=upper"`
+	Key                     string      `validate:"string=key"`
+	KeyValue                string      `validate:"id=my_value"`
+	KeyFromValue            string      `validate:"key={my_value}"`
+	NotMatch1               string      `validate:"id=not_match"`
+	NotMatch2               string      `validate:"not={not_match}"`
+	TypeAlpha               string      `validate:"alpha"`
+	TypeNumeric             string      `validate:"numeric"`
+	TypeBool                string      `validate:"bool"`
+	ShouldBeNull            *string     `validate:"isnull"`
+	ShouldNotBeNull         *string     `validate:"notnull"`
+	EncodeMd5               string      `validate:"encode=md5"`
+	EnableEncodeRandom      bool        `validate:"id=random_enable"`
+	EnableEncodeRandomTitle bool        `validate:"id=random_title_enable"`
+	EncodeRandom            string      `validate:"if=(id=random_enable value=true), encode=random, if=(id=random_title_enable value=true), string=title"`
+	EncodeRandomArg         string      `validate:"if=(arg=random_enable value=true), encode=random, if=(arg=random_title_enable value=true), string=title"`
+	EncodeX                 string      `validate:"encode=x"`
+	Interface               interface{} `validate:"notnull, notzero"`
 }
 
 type Example2 struct {
@@ -112,7 +114,7 @@ type Example2 struct {
 	PasswordConfirm   string  `validate:"value={password}"`
 }
 
-var dummy_middle_handler = func(context *validator.ValidatorContext, validationData *validator.ValidationData, args ...interface{}) []error {
+var dummy_middle_handler = func(context *validator.ValidatorContext, validationData *validator.ValidationData) []error {
 	var rtnErrs []error
 
 	err := errors.New("dummy middle responding...")
@@ -154,7 +156,7 @@ var errs = map[string]error{
 	"ErrorTag20": errors.New("error 20"),
 	"ErrorTag21": errors.New("error 21"),
 }
-var dummy_error_handler = func(context *validator.ValidatorContext, validationData *validator.ValidationData, args ...interface{}) error {
+var dummy_error_handler = func(context *validator.ValidatorContext, validationData *validator.ValidationData) error {
 	if err, ok := errs[validationData.ErrorData.Code]; ok {
 		var regx = regexp.MustCompile(RegexForMissingParms)
 		matches := regx.FindAllStringIndex(err.Error(), -1)
@@ -173,11 +175,11 @@ var dummy_error_handler = func(context *validator.ValidatorContext, validationDa
 	return nil
 }
 
-var dummy_callback = func(context *validator.ValidatorContext, validationData *validator.ValidationData, args ...interface{}) []error {
+var dummy_callback = func(context *validator.ValidatorContext, validationData *validator.ValidationData) []error {
 	return []error{errors.New("there's a bug here!")}
 }
 
-var dummy_args_callback = func(context *validator.ValidatorContext, validationData *validator.ValidationData, args ...interface{}) []error {
+var dummy_args_callback = func(context *validator.ValidatorContext, validationData *validator.ValidationData) []error {
 	fmt.Printf("\nthere are the following arguments %+v!", validationData.Arguments)
 	return nil
 }
@@ -222,26 +224,28 @@ func main() {
 		NextSet: NextSet{
 			Set: 123,
 		},
-		DistinctIntPointer: []*int{&intVal1, &intVal1, &intVal2, &intVal2},
-		DistinctInt:        []int{1, 1, 2, 2},
-		DistinctString:     []string{"a", "a", "b", "b"},
-		DistinctBool:       []bool{true, true, false, false},
-		DistinctFloat:      []float32{1.1, 1.1, 1.2, 1.2},
-		Trim:               "     aqui       TEM     espaços    !!   ",
-		Upper:              "     aqui       TEM     espaços    !!   ",
-		Lower:              "     AQUI       TEM     ESPACOS    !!   ",
-		Key:                "     AQUI       TEM     ESPACOS    !!   ",
-		KeyValue:           "     aaaaa     3245 79 / ( ) ? =  tem     espaços ...   !!  <<<< ",
-		NotMatch1:          "A",
-		NotMatch2:          "A",
-		TypeAlpha:          "123",
-		TypeNumeric:        "ABC",
-		TypeBool:           "ERRADO",
-		ShouldBeNull:       &str,
-		EncodeMd5:          "teste",
-		EnableEncodeRandom: true,
-		EncodeRandom:       "o meu novo teste random",
-		EncodeX:            "teste",
+		DistinctIntPointer:      []*int{&intVal1, &intVal1, &intVal2, &intVal2},
+		DistinctInt:             []int{1, 1, 2, 2},
+		DistinctString:          []string{"a", "a", "b", "b"},
+		DistinctBool:            []bool{true, true, false, false},
+		DistinctFloat:           []float32{1.1, 1.1, 1.2, 1.2},
+		Trim:                    "     aqui       TEM     espaços    !!   ",
+		Upper:                   "     aqui       TEM     espaços    !!   ",
+		Lower:                   "     AQUI       TEM     ESPACOS    !!   ",
+		Key:                     "     AQUI       TEM     ESPACOS    !!   ",
+		KeyValue:                "     aaaaa     3245 79 / ( ) ? =  tem     espaços ...   !!  <<<< ",
+		NotMatch1:               "A",
+		NotMatch2:               "A",
+		TypeAlpha:               "123",
+		TypeNumeric:             "ABC",
+		TypeBool:                "ERRADO",
+		ShouldBeNull:            &str,
+		EncodeMd5:               "teste",
+		EnableEncodeRandom:      true,
+		EnableEncodeRandomTitle: true,
+		EncodeRandom:            "o meu novo teste random",
+		EncodeRandomArg:         "o meu novo teste random",
+		EncodeX:                 "teste",
 		Brothers: []Example2{
 			Example2{
 				Name:            "jessica",
@@ -278,12 +282,17 @@ func main() {
 	fmt.Printf("\nBEFORE DISTINCT BOOL: %+v", example.DistinctBool)
 	fmt.Printf("\nBEFORE DISTINCT FLOAT: %+v", example.DistinctFloat)
 	fmt.Printf("\nBEFORE DISTINCT ARRAY2: %+v", example.Array2)
-	if errs := validator.Validate(&example); len(errs) > 0 {
+
+	if errs := validator.Validate(&example,
+		validator.NewArgument("random_enable", false),
+		validator.NewArgument("random_title_enable", true),
+	); len(errs) > 0 {
 		fmt.Printf("\n\nERRORS: %d\n", len(errs))
 		for _, err := range errs {
 			fmt.Printf("\nERROR: %s", err)
 		}
 	}
+
 	fmt.Printf("\n\nAFTER SET: %d", example.Set)
 	fmt.Printf("\nAFTER NEXT SET: %d", example.NextSet.Set)
 	fmt.Printf("\nAFTER TRIM: %s", example.Trim)
@@ -300,4 +309,5 @@ func main() {
 	fmt.Printf("\nAFTER DISTINCT ARRAY2: %+v", example.Array2)
 	fmt.Printf("\nENCODED MD5: %+v", example.EncodeMd5)
 	fmt.Printf("\nENCODED RANDOM: %+v", example.EncodeRandom)
+	fmt.Printf("\nENCODED RANDOM BY ARG: %+v", example.EncodeRandomArg)
 }

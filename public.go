@@ -1,14 +1,14 @@
 package validator
 
-func AddBefore(name string, handler BeforeTagHandler) *Validator {
+func AddBefore(name string, handler beforeTagHandler) *Validator {
 	return validatorInstance.AddBefore(name, handler)
 }
 
-func AddMiddle(name string, handler MiddleTagHandler) *Validator {
+func AddMiddle(name string, handler middleTagHandler) *Validator {
 	return validatorInstance.AddMiddle(name, handler)
 }
 
-func AddAfter(name string, handler AfterTagHandler) *Validator {
+func AddAfter(name string, handler afterTagHandler) *Validator {
 	return validatorInstance.AddAfter(name, handler)
 }
 
@@ -25,6 +25,6 @@ func SetSanitize(sanitize []string) *Validator {
 }
 
 // Validate ...
-func Validate(obj interface{}) []error {
-	return validatorInstance.Validate(obj)
+func Validate(obj interface{}, args ...*Argument) []error {
+	return validatorInstance.Validate(obj, args...)
 }

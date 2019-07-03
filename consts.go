@@ -34,6 +34,7 @@ const (
 	ConstPrefixTagKey  = "key"
 
 	ConstTagId       = "id"
+	ConstTagArg      = "arg"
 	ConstTagValue    = "value"
 	ConstTagError    = "error"
 	ConstTagIf       = "if"

@@ -36,14 +36,17 @@ func (v *Validator) loadExpectedValue(context *ValidatorContext, expected interf
 		if matched {
 			replacer := strings.NewReplacer("{", "", "}", "")
 			id := replacer.Replace(newExpected)
-			newExpected = fmt.Sprintf("%+v", context.Values[id].Obj.Interface())
+			value, ok := context.GetValue(ConstTagId, id)
+			if ok {
+				newExpected = fmt.Sprintf("%+v", value.obj.Interface())
+			}
 		}
 	}
 
 	return newExpected, nil
 }
 
-func (v *Validator) validate_value(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
+func (v *Validator) validate_value(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
 	isNull, _, value := v.getValue(validationData.Value)
@@ -65,7 +68,7 @@ func (v *Validator) validate_value(context *ValidatorContext, validationData *Va
 	return rtnErrs
 }
 
-func (v *Validator) validate_sanitize(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
+func (v *Validator) validate_sanitize(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
 	isNull, _, value := v.getValue(validationData.Value)
@@ -99,7 +102,7 @@ func (v *Validator) validate_sanitize(context *ValidatorContext, validationData 
 	return rtnErrs
 }
 
-func (v *Validator) validate_not(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
+func (v *Validator) validate_not(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
 	isNull, _, value := v.getValue(validationData.Value)
@@ -121,7 +124,7 @@ func (v *Validator) validate_not(context *ValidatorContext, validationData *Vali
 	return rtnErrs
 }
 
-func (v *Validator) validate_options(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
+func (v *Validator) validate_options(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
 	isNull, obj, value := v.getValue(validationData.Value)
@@ -234,7 +237,7 @@ func (v *Validator) validate_options(context *ValidatorContext, validationData *
 	return rtnErrs
 }
 
-func (v *Validator) validate_size(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
+func (v *Validator) validate_size(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
 	isNull, obj, value := v.getValue(validationData.Value)
@@ -279,7 +282,7 @@ func (v *Validator) validate_size(context *ValidatorContext, validationData *Val
 	return rtnErrs
 }
 
-func (v *Validator) validate_min(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
+func (v *Validator) validate_min(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
 	expected, err := v.loadExpectedValue(context, validationData.Expected)
@@ -324,7 +327,7 @@ func (v *Validator) validate_min(context *ValidatorContext, validationData *Vali
 	return rtnErrs
 }
 
-func (v *Validator) validate_max(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
+func (v *Validator) validate_max(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
 	expected, err := v.loadExpectedValue(context, validationData.Expected)
@@ -369,7 +372,7 @@ func (v *Validator) validate_max(context *ValidatorContext, validationData *Vali
 	return rtnErrs
 }
 
-func (v *Validator) validate_notzero(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
+func (v *Validator) validate_notzero(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
 	if errs := v.validate_iszero(context, validationData); len(errs) == 0 {
@@ -380,7 +383,7 @@ func (v *Validator) validate_notzero(context *ValidatorContext, validationData *
 	return rtnErrs
 }
 
-func (v *Validator) validate_isnull(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
+func (v *Validator) validate_isnull(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
 	isNull, _, value := v.getValue(validationData.Value)
@@ -392,7 +395,7 @@ func (v *Validator) validate_isnull(context *ValidatorContext, validationData *V
 	return rtnErrs
 }
 
-func (v *Validator) validate_notnull(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
+func (v *Validator) validate_notnull(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
 	if errs := v.validate_isnull(context, validationData); len(errs) == 0 {
@@ -403,7 +406,7 @@ func (v *Validator) validate_notnull(context *ValidatorContext, validationData *
 	return rtnErrs
 }
 
-func (v *Validator) validate_iszero(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
+func (v *Validator) validate_iszero(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
 	var isZero bool
@@ -447,7 +450,7 @@ func (v *Validator) validate_iszero(context *ValidatorContext, validationData *V
 	return rtnErrs
 }
 
-func (v *Validator) validate_regex(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
+func (v *Validator) validate_regex(context *ValidatorContext, validationData *ValidationData) []error {
 
 	rtnErrs := make([]error, 0)
 
@@ -473,7 +476,7 @@ func (v *Validator) validate_regex(context *ValidatorContext, validationData *Va
 	return rtnErrs
 }
 
-func (v *Validator) validate_special(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
+func (v *Validator) validate_special(context *ValidatorContext, validationData *ValidationData) []error {
 
 	rtnErrs := make([]error, 0)
 
@@ -507,7 +510,7 @@ func (v *Validator) validate_special(context *ValidatorContext, validationData *
 	return v.validate_regex(context, validationData)
 }
 
-func (v *Validator) validate_callback(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
+func (v *Validator) validate_callback(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
 	validators := strings.Split(validationData.Expected.(string), ";")
@@ -533,7 +536,7 @@ type ErrorValidate struct {
 	replaced bool
 }
 
-func (v *Validator) validate_error(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
+func (v *Validator) validate_error(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 	added := make(map[string]bool)
 	for i, e := range *validationData.Errors {
@@ -600,16 +603,16 @@ func (v *Validator) validate_error(context *ValidatorContext, validationData *Va
 	return rtnErrs
 }
 
-func (v *Validator) validate_id(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
+func (v *Validator) validate_id(context *ValidatorContext, validationData *ValidationData) []error {
 	return nil
 }
 
-func (v *Validator) validate_if(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
+func (v *Validator) validate_if(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
 	str := validationData.Expected.(string)
-	var expressions []*Expression
-	var expression *Expression
+	var expressions []*expression
+	var expr *expression
 	var query string
 
 	// read conditions
@@ -621,9 +624,22 @@ func (v *Validator) validate_if(context *ValidatorContext, validationData *Valid
 			continue
 
 		case ')':
-			start := strings.Index(query, "id=")
-			if start == -1 {
+			startId := strings.Index(query, fmt.Sprintf("%s=", ConstTagId))
+			startArg := strings.Index(query, fmt.Sprintf("%s=", ConstTagArg))
+			if startId == -1 && startArg == -1 {
 				return rtnErrs
+			}
+
+			var start int
+			var tag string
+			if startId > -1 {
+				tag = ConstTagId
+				start = startId
+			}
+
+			if startArg > -1 {
+				tag = ConstTagArg
+				start = startArg
 			}
 
 			end := strings.Index(query[start:], " ")
@@ -631,12 +647,14 @@ func (v *Validator) validate_if(context *ValidatorContext, validationData *Valid
 				end = size - 1
 			}
 
-			id := query[start+3 : end]
+			id := query[start+len(tag)+1 : end]
 			query = query[end+1:]
 
-			if data, ok := context.Values[id]; ok {
+			data, ok := context.GetValue(tag, id)
+
+			if ok {
 				var errs []error
-				err := context.execute(data.Type, data.Obj, strings.Split(query, " "), &errs)
+				err := context.execute(data.typ, data.obj, strings.Split(query, " "), &errs)
 
 				// get next operator
 				var operator Operator
@@ -648,14 +666,15 @@ func (v *Validator) validate_if(context *ValidatorContext, validationData *Valid
 					size = len(str)
 				}
 
-				expression = &Expression{
-					Data:         data,
-					Result:       err,
-					NextOperator: operator,
-					Expected:     query,
+				expr = &expression{
+					data:         data,
+					result:       err,
+					nextOperator: operator,
+					expected:     query,
 				}
-				expressions = append(expressions, expression)
+				expressions = append(expressions, expr)
 			}
+
 			query = ""
 
 		default:
@@ -670,7 +689,7 @@ func (v *Validator) validate_if(context *ValidatorContext, validationData *Valid
 	for _, expr := range expressions {
 
 		if condition == "" {
-			if expr.Result == nil {
+			if expr.result == nil {
 				condition = "ok"
 			} else {
 				condition = "ko"
@@ -679,21 +698,21 @@ func (v *Validator) validate_if(context *ValidatorContext, validationData *Valid
 
 			switch prevOperator {
 			case AND:
-				if expr.Result != nil {
+				if expr.result != nil {
 					condition = "ko"
 				}
 			case OR:
-				if expr.Result == nil && condition == "ko" {
+				if expr.result == nil && condition == "ko" {
 					condition = "ok"
 				}
 			case NONE:
-				if expr.Result == nil {
+				if expr.result == nil {
 					condition = "ok"
 				}
 			}
 		}
 
-		prevOperator = expr.NextOperator
+		prevOperator = expr.nextOperator
 	}
 
 	if condition == "ko" {
@@ -703,7 +722,7 @@ func (v *Validator) validate_if(context *ValidatorContext, validationData *Valid
 	return nil
 }
 
-func (v *Validator) validate_string(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
+func (v *Validator) validate_string(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
 	_, obj, _ := v.getValue(validationData.Value)
@@ -731,7 +750,7 @@ func (v *Validator) validate_string(context *ValidatorContext, validationData *V
 	return rtnErrs
 }
 
-func (v *Validator) validate_set(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
+func (v *Validator) validate_set(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
 	_, obj, value := v.getValue(validationData.Value)
@@ -751,11 +770,11 @@ func (v *Validator) validate_set(context *ValidatorContext, validationData *Vali
 			id := replacer.Replace(newExpected)
 			validationData.Expected = value
 
-			if newValue, ok := context.Values[id]; ok {
+			if newValue, ok := context.GetValue(ConstTagId, id); ok {
 				value := obj.FieldByName(validationData.Field)
 				kind := reflect.TypeOf(value).Kind()
 
-				setValue(kind, value, newValue.Obj.Interface())
+				setValue(kind, value, newValue.obj.Interface())
 			} else {
 				err := fmt.Errorf("invalid set tag [%s] on field [%+v]", validationData.Expected, validationData.Name)
 				rtnErrs = append(rtnErrs, err)
@@ -770,7 +789,7 @@ func (v *Validator) validate_set(context *ValidatorContext, validationData *Vali
 	return rtnErrs
 }
 
-func (v *Validator) string_key(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
+func (v *Validator) string_key(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
 	_, obj, value := v.getValue(validationData.Value)
@@ -808,7 +827,7 @@ func setValue(kind reflect.Kind, obj reflect.Value, newValue interface{}) {
 	}
 }
 
-func (v *Validator) validate_distinct(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
+func (v *Validator) validate_distinct(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
 	_, parentObj, parentValue := v.getValue(validationData.Parent)
@@ -855,7 +874,7 @@ func (v *Validator) validate_distinct(context *ValidatorContext, validationData 
 	return rtnErrs
 }
 
-func (v *Validator) validate_alpha(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
+func (v *Validator) validate_alpha(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
 	isNil, _, value := v.getValue(validationData.Value)
@@ -876,7 +895,7 @@ func (v *Validator) validate_alpha(context *ValidatorContext, validationData *Va
 	return rtnErrs
 }
 
-func (v *Validator) validate_numeric(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
+func (v *Validator) validate_numeric(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
 	isNil, _, value := v.getValue(validationData.Value)
@@ -897,7 +916,7 @@ func (v *Validator) validate_numeric(context *ValidatorContext, validationData *
 	return rtnErrs
 }
 
-func (v *Validator) validate_bool(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
+func (v *Validator) validate_bool(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
 	isNil, _, value := v.getValue(validationData.Value)
@@ -917,7 +936,7 @@ func (v *Validator) validate_bool(context *ValidatorContext, validationData *Val
 	return rtnErrs
 }
 
-func (v *Validator) string_trim(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
+func (v *Validator) string_trim(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
 	_, obj, value := v.getValue(validationData.Value)
@@ -937,7 +956,7 @@ func (v *Validator) string_trim(context *ValidatorContext, validationData *Valid
 	return rtnErrs
 }
 
-func (v *Validator) string_title(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
+func (v *Validator) string_title(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
 	_, obj, value := v.getValue(validationData.Value)
@@ -955,7 +974,7 @@ func (v *Validator) string_title(context *ValidatorContext, validationData *Vali
 	return rtnErrs
 }
 
-func (v *Validator) string_upper(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
+func (v *Validator) string_upper(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
 	_, obj, value := v.getValue(validationData.Value)
@@ -973,7 +992,7 @@ func (v *Validator) string_upper(context *ValidatorContext, validationData *Vali
 	return rtnErrs
 }
 
-func (v *Validator) string_lower(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
+func (v *Validator) string_lower(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
 	_, obj, value := v.getValue(validationData.Value)
@@ -1006,7 +1025,7 @@ func (v *Validator) generate_random(strValue string) string {
 	return string(newValue)
 }
 
-func (v *Validator) validate_encode(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
+func (v *Validator) validate_encode(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
 	_, obj, value := v.getValue(validationData.Value)
@@ -1041,7 +1060,7 @@ func (v *Validator) validate_encode(context *ValidatorContext, validationData *V
 	return rtnErrs
 }
 
-func (v *Validator) validate_args(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
+func (v *Validator) validate_args(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
 	splitArgs := strings.Split(validationData.Expected.(string), ";")

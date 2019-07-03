@@ -8,7 +8,7 @@ func NewValidator() *Validator {
 
 	v := &Validator{
 		tag:       ConstDefaultValidationTag,
-		callbacks: make(map[string]CallbackHandler),
+		callbacks: make(map[string]callbackHandler),
 		sanitize:  make([]string, 0),
 		logger:    logger.NewLogDefault(ConstDefaultLogTag, logger.InfoLevel),
 	}
@@ -18,7 +18,7 @@ func NewValidator() *Validator {
 	return v
 }
 
-func (v *Validator) NewActiveHandlers() map[string]bool {
+func (v *Validator) newActiveHandlers() map[string]bool {
 	handlers := make(map[string]bool)
 
 	if v.handlersBefore != nil {
@@ -42,28 +42,28 @@ func (v *Validator) NewActiveHandlers() map[string]bool {
 	return handlers
 }
 
-func (v *Validator) AddBefore(name string, handler BeforeTagHandler) *Validator {
+func (v *Validator) AddBefore(name string, handler beforeTagHandler) *Validator {
 	v.handlersBefore[name] = handler
 	v.activeHandlers[name] = true
 
 	return v
 }
 
-func (v *Validator) AddMiddle(name string, handler MiddleTagHandler) *Validator {
+func (v *Validator) AddMiddle(name string, handler middleTagHandler) *Validator {
 	v.handlersMiddle[name] = handler
 	v.activeHandlers[name] = true
 
 	return v
 }
 
-func (v *Validator) AddAfter(name string, handler AfterTagHandler) *Validator {
+func (v *Validator) AddAfter(name string, handler afterTagHandler) *Validator {
 	v.handlersAfter[name] = handler
 	v.activeHandlers[name] = true
 
 	return v
 }
 
-func (v *Validator) SetErrorCodeHandler(handler ErrorCodeHandler) *Validator {
+func (v *Validator) SetErrorCodeHandler(handler errorCodeHandler) *Validator {
 	v.errorCodeHandler = handler
 
 	return v
@@ -87,13 +87,13 @@ func (v *Validator) SetSanitize(sanitize []string) *Validator {
 	return v
 }
 
-func (v *Validator) AddCallback(name string, callback CallbackHandler) *Validator {
+func (v *Validator) AddCallback(name string, callback callbackHandler) *Validator {
 	v.callbacks[name] = callback
 
 	return v
 }
 
 // MyValidate ...
-func (v *Validator) Validate(obj interface{}, args ...interface{}) []error {
-	return NewValidatorHandler(v).handleValidation(obj, args...)
+func (v *Validator) Validate(obj interface{}, args ...*Argument) []error {
+	return NewValidatorHandler(v, args...).handleValidation(obj)
 }

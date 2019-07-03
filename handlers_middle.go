@@ -1,7 +1,7 @@
 package validator
 
-func (v *Validator) NewDefaultMiddleHandlers() map[string]MiddleTagHandler {
-	return map[string]MiddleTagHandler{
+func (v *Validator) newDefaultMiddleHandlers() map[string]middleTagHandler {
+	return map[string]middleTagHandler{
 		ConstTagValue:    v.validate_value,
 		ConstTagNot:      v.validate_not,
 		ConstTagOptions:  v.validate_options,
