@@ -49,7 +49,7 @@ with values ("md5", "random"),
 * SetTag (set validation tag to other that you define)
 * SetSanitize (set sanitize strings)
 * AddCallback (set a specific callback validation)
-* Validate (validate the object)
+* Validate (validate the object, args...)
 
 ## Dependecy Management
 >### Dep
