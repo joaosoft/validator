@@ -37,6 +37,7 @@ with values (trim, title, upper, lower, key),
 * item:<< command >>> (allows you to validate array or map items individually, [example: "item:size=10", means that the array items need to have the size of 10])
 * key:<< command >>> (allows you to validate a map key's individually, [example: "key:size=10", means that the map key's need to have the size of 10])
 * encode ([example: "encode=md5"])
+with values ("md5", "random"), 
 * args (arguments that will be available on callbacks ValidationData struct)
 
 ## With methods for
