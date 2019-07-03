@@ -66,10 +66,10 @@ type Example struct {
 	DistinctBool       []bool      `validate:"distinct"`
 	DistinctFloat      []float32   `validate:"distinct"`
 	IsZero             int         `validate:"iszero"`
-	Trim               string      `validate:"set={trim}"`
-	Lower              string      `validate:"set={lower}"`
-	Upper              string      `validate:"set={upper}"`
-	Key                string      `validate:"set={key}"`
+	Trim               string      `validate:"string=trim"`
+	Lower              string      `validate:"string=lower"`
+	Upper              string      `validate:"string=upper"`
+	Key                string      `validate:"string=key"`
 	KeyValue           string      `validate:"id=my_value"`
 	KeyFromValue       string      `validate:"key={my_value}"`
 	NotMatch1          string      `validate:"id=not_match"`
@@ -80,6 +80,7 @@ type Example struct {
 	ShouldBeNull       *string     `validate:"isnull"`
 	ShouldNotBeNull    *string     `validate:"notnull"`
 	EncodeMd5          string      `validate:"encode=md5"`
+	EncodeRandom       string      `validate:"encode=random, string=title"`
 	EncodeX            string      `validate:"encode=x"`
 	Interface          interface{} `validate:"notnull, notzero"`
 }
@@ -237,6 +238,7 @@ func main() {
 		TypeBool:           "ERRADO",
 		ShouldBeNull:       &str,
 		EncodeMd5:          "teste",
+		EncodeRandom:       "o meu novo teste random",
 		EncodeX:            "teste",
 		Brothers: []Example2{
 			Example2{
@@ -295,4 +297,5 @@ func main() {
 	fmt.Printf("\nAFTER DISTINCT FLOAT: %+v", example.DistinctFloat)
 	fmt.Printf("\nAFTER DISTINCT ARRAY2: %+v", example.Array2)
 	fmt.Printf("\nENCODED MD5: %+v", example.EncodeMd5)
+	fmt.Printf("\nENCODED RANDOM: %+v", example.EncodeRandom)
 }

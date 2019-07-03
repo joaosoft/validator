@@ -26,8 +26,10 @@ A simple struct validator by tags (exported fields only).
 * error (simple and multi error handling `validate:"value=1, error={errorValue1}, max=10, error={errorMax10}"`)
 * if (conditional validation between fields with operators ("and", "or") [define id=xpto])
 * set (allows to set native values) to use this you need to use the variable address, like this `validator.Validate(&example)`
-with values ("the field id", "the field value", trim, title, upper, lower, key),  
+with values ("the field id", "the field value"),  
 (key converts the value to a url valid key. You can also do key=xpto or key={id} where the id is other field id [example "This is a test" to "this-is-a-test"])
+* string (allows to do actions on string values) to use this you need to use the variable address, like this `validator.Validate(&example)`
+with values (trim, title, upper, lower, key),
 * distinct (remove duplicated values from slices of primitive types)
 * alpha (the value needs to be alphanumeric)
 * numeric (the value needs to be numeric)
@@ -121,10 +123,10 @@ type Example struct {
 	DistinctBool       []bool      `validate:"distinct"`
 	DistinctFloat      []float32   `validate:"distinct"`
 	IsZero             int         `validate:"iszero"`
-	Trim               string      `validate:"set={trim}"`
-	Lower              string      `validate:"set={lower}"`
-	Upper              string      `validate:"set={upper}"`
-	Key                string      `validate:"set={key}"`
+	Trim               string      `validate:"string=trim"`
+	Lower              string      `validate:"string=lower"`
+	Upper              string      `validate:"string=upper"`
+	Key                string      `validate:"string=key"`
 	KeyValue           string      `validate:"id=my_value"`
 	KeyFromValue       string      `validate:"key={my_value}"`
 	NotMatch1          string      `validate:"id=not_match"`
@@ -135,6 +137,7 @@ type Example struct {
 	ShouldBeNull       *string     `validate:"isnull"`
 	ShouldNotBeNull    *string     `validate:"notnull"`
 	EncodeMd5          string      `validate:"encode=md5"`
+	EncodeRandom       string      `validate:"encode=random, string=title"`
 	EncodeX            string      `validate:"encode=x"`
 	Interface          interface{} `validate:"notnull, notzero"`
 }
@@ -160,11 +163,12 @@ type Example2 struct {
 	IsNill            *string `validate:"notzero, error={ErrorTag17}"`
 	Sanitize          string  `validate:"sanitize=a;b;teste, error={ErrorTag17}"`
 	Callback          string  `validate:"callback=dummy_callback, error={ErrorTag19}"`
+	CallbackArgs      string  `validate:"args=a;b;c, callback=dummy_args_callback"`
 	Password          string  `json:"password" validate:"id=password"`
 	PasswordConfirm   string  `validate:"value={password}"`
 }
 
-var dummy_middle_handler = func(context *validator.ValidatorContext, validationData *validator.ValidationData) []error {
+var dummy_middle_handler = func(context *validator.ValidatorContext, validationData *validator.ValidationData, args ...interface{}) []error {
 	var rtnErrs []error
 
 	err := errors.New("dummy middle responding...")
@@ -179,6 +183,7 @@ func init() {
 		SetValidateAll(true).
 		SetErrorCodeHandler(dummy_error_handler).
 		AddCallback("dummy_callback", dummy_callback).
+		AddCallback("dummy_args_callback", dummy_args_callback).
 		AddCallback("dummy_callback_2", dummy_callback)
 }
 
@@ -205,7 +210,7 @@ var errs = map[string]error{
 	"ErrorTag20": errors.New("error 20"),
 	"ErrorTag21": errors.New("error 21"),
 }
-var dummy_error_handler = func(context *validator.ValidatorContext, validationData *validator.ValidationData) error {
+var dummy_error_handler = func(context *validator.ValidatorContext, validationData *validator.ValidationData, args ...interface{}) error {
 	if err, ok := errs[validationData.ErrorData.Code]; ok {
 		var regx = regexp.MustCompile(RegexForMissingParms)
 		matches := regx.FindAllStringIndex(err.Error(), -1)
@@ -224,8 +229,13 @@ var dummy_error_handler = func(context *validator.ValidatorContext, validationDa
 	return nil
 }
 
-var dummy_callback = func(context *validator.ValidatorContext, validationData *validator.ValidationData) []error {
+var dummy_callback = func(context *validator.ValidatorContext, validationData *validator.ValidationData, args ...interface{}) []error {
 	return []error{errors.New("there's a bug here!")}
+}
+
+var dummy_args_callback = func(context *validator.ValidatorContext, validationData *validator.ValidationData, args ...interface{}) []error {
+	fmt.Printf("\nthere are the following arguments %+v!", validationData.Arguments)
+	return nil
 }
 
 func main() {
@@ -285,6 +295,7 @@ func main() {
 		TypeBool:           "ERRADO",
 		ShouldBeNull:       &str,
 		EncodeMd5:          "teste",
+		EncodeRandom:       "o meu novo teste random",
 		EncodeX:            "teste",
 		Brothers: []Example2{
 			Example2{
@@ -343,6 +354,7 @@ func main() {
 	fmt.Printf("\nAFTER DISTINCT FLOAT: %+v", example.DistinctFloat)
 	fmt.Printf("\nAFTER DISTINCT ARRAY2: %+v", example.Array2)
 	fmt.Printf("\nENCODED MD5: %+v", example.EncodeMd5)
+	fmt.Printf("\nENCODED RANDOM: %+v", example.EncodeRandom)
 }
 ```
 
@@ -355,14 +367,15 @@ BEFORE KEY:      AQUI       TEM     ESPACOS    !!
 BEFORE FROM KEY: 
 BEFORE UPPER:      aqui       TEM     espaços    !!   
 BEFORE LOWER:      AQUI       TEM     ESPACOS    !!   
-BEFORE DISTINCT INT POINTER: [0xc00008e2b0 0xc00008e2b0 0xc00008e2b8 0xc00008e2b8]
+BEFORE DISTINCT INT POINTER: [0xc0000202f8 0xc0000202f8 0xc000020310 0xc000020310]
 BEFORE DISTINCT INT: [1 1 2 2]
 BEFORE DISTINCT STRING: [a a b b]
 BEFORE DISTINCT BOOL: [true true false false]
 BEFORE DISTINCT FLOAT: [1.1 1.1 1.2 1.2]
 BEFORE DISTINCT ARRAY2: [111 111 222 222]
+there are the following arguments [a b c]!
 
-ERRORS: 37
+ERRORS: 38
 
 ERROR: the length [6] is lower then the expected [5] on field [Array] value [123456]
 ERROR: the length [7] is lower then the expected [5] on field [Array] value [1234567]
@@ -372,7 +385,7 @@ ERROR: the length [7] is lower then the expected [5] on field [Map4] value [1234
 ERROR: the length [6] is lower then the expected [5] on field [Map4] value [123456]
 ERROR: error 1: a:a, b:b
 ERROR: error 1: a:a, b:b
-ERROR: the value [10] is different of the expected [30] on field [Age] value [10]
+ERROR: the value [10] is different of the expected [30] on field [Age]
 ERROR: error 3
 ERROR: error 5
 ERROR: error 6
@@ -389,9 +402,9 @@ ERROR: error 17
 ERROR: error 19
 ERROR: error 17
 ERROR: error 19
-ERROR: the value [password_errada] is different of the expected [password] on field [PasswordConfirm] value [password_errada]
-ERROR: the value [30] is different of the expected [10] on field [MyValidate] value [30]
-ERROR: {"code":"20","message":"the value shouldn't be zero on field [DoubleValidation]"}
+ERROR: the value [password_errada] is different of the expected [password] on field [PasswordConfirm]
+ERROR: the value [30] is different of the expected [10] on field [MyValidate]
+ERROR: 20
 ERROR: error 21
 ERROR: the expected [A] should be different of the [A] on field [NotMatch2]
 ERROR: the value [123] is invalid for type alphanumeric on field [TypeAlpha] value [123]
@@ -401,23 +414,25 @@ ERROR: the value should be null on field [ShouldBeNull] instead of [2018-12-1]
 ERROR: the value shouldn't be null on field [ShouldNotBeNull]
 ERROR: the encoding [x] is invalid on field [EncodeX]
 ERROR: the value shouldn't be null on field [Interface]
+ERROR: the value shouldn't be zero on field [Interface]
 
 AFTER SET: 321
 AFTER NEXT SET: 321
 AFTER TRIM: aqui TEM espaços !!
-AFTER KEY: aqui-tem-espacos-
+AFTER KEY: key
 AFTER FROM KEY: aaaaa-3245-79-tem-espacos-
 
 AFTER LOWER:      aqui       tem     espacos    !!   
 
 AFTER UPPER:      AQUI       TEM     ESPAÇOS    !!   
-AFTER DISTINCT INT POINTER: [0xc00008e2b0 0xc00008e2b8]
+AFTER DISTINCT INT POINTER: [0xc0000202f8 0xc000020310]
 AFTER DISTINCT INT: [1 2]
 AFTER DISTINCT STRING: [a b]
 AFTER DISTINCT BOOL: [true false]
 AFTER DISTINCT FLOAT: [1.1 1.2]
 AFTER DISTINCT ARRAY2: [111 222]
 ENCODED MD5: 698dc19d489c4e4db73e28a713eab07b
+ENCODED RANDOM: L Xfs Asra Exodr Cebpfr
 ```
 
 ## Known issues

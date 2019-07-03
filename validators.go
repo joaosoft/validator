@@ -4,10 +4,12 @@ import (
 	"bytes"
 	"crypto/md5"
 	"fmt"
+	"math/rand"
 	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 	"unicode"
 
 	"errors"
@@ -701,6 +703,34 @@ func (v *Validator) validate_if(context *ValidatorContext, validationData *Valid
 	return nil
 }
 
+func (v *Validator) validate_string(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
+	rtnErrs := make([]error, 0)
+
+	_, obj, _ := v.getValue(validationData.Value)
+	if !obj.CanAddr() {
+		err := fmt.Errorf("the object should be passed as a pointer! when validating field [%+v]", validationData.Name)
+		rtnErrs = append(rtnErrs, err)
+		return rtnErrs
+	}
+
+	function := fmt.Sprintf("%+v", validationData.Expected)
+	switch function {
+	case ConstSetTagForTrim:
+		v.string_trim(context, validationData)
+	case ConstSetTagForTitle:
+		v.string_title(context, validationData)
+	case ConstSetTagForLower:
+		v.string_lower(context, validationData)
+	case ConstSetTagForUpper:
+		v.string_upper(context, validationData)
+	case ConstSetTagForKey:
+		v.string_key(context, validationData)
+	default:
+	}
+
+	return rtnErrs
+}
+
 func (v *Validator) validate_set(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
 	rtnErrs := make([]error, 0)
 
@@ -721,28 +751,15 @@ func (v *Validator) validate_set(context *ValidatorContext, validationData *Vali
 			id := replacer.Replace(newExpected)
 			validationData.Expected = value
 
-			switch id {
-			case ConstSetTagForTrim:
-				v.set_trim(context, validationData)
-			case ConstSetTagForTitle:
-				v.set_title(context, validationData)
-			case ConstSetTagForLower:
-				v.set_lower(context, validationData)
-			case ConstSetTagForUpper:
-				v.set_upper(context, validationData)
-			case ConstSetTagForKey:
-				v.set_key(context, validationData)
-			default:
-				if newValue, ok := context.Values[id]; ok {
-					value := obj.FieldByName(validationData.Field)
-					kind := reflect.TypeOf(value).Kind()
+			if newValue, ok := context.Values[id]; ok {
+				value := obj.FieldByName(validationData.Field)
+				kind := reflect.TypeOf(value).Kind()
 
-					setValue(kind, value, newValue.Obj.Interface())
-				} else {
-					err := fmt.Errorf("invalid set tag [%s] on field [%+v]", validationData.Expected, validationData.Name)
-					rtnErrs = append(rtnErrs, err)
-					return rtnErrs
-				}
+				setValue(kind, value, newValue.Obj.Interface())
+			} else {
+				err := fmt.Errorf("invalid set tag [%s] on field [%+v]", validationData.Expected, validationData.Name)
+				rtnErrs = append(rtnErrs, err)
+				return rtnErrs
 			}
 		} else {
 			kind := reflect.TypeOf(value).Kind()
@@ -753,7 +770,7 @@ func (v *Validator) validate_set(context *ValidatorContext, validationData *Vali
 	return rtnErrs
 }
 
-func (v *Validator) set_key(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
+func (v *Validator) string_key(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
 	rtnErrs := make([]error, 0)
 
 	_, obj, value := v.getValue(validationData.Value)
@@ -900,7 +917,7 @@ func (v *Validator) validate_bool(context *ValidatorContext, validationData *Val
 	return rtnErrs
 }
 
-func (v *Validator) set_trim(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
+func (v *Validator) string_trim(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
 	rtnErrs := make([]error, 0)
 
 	_, obj, value := v.getValue(validationData.Value)
@@ -920,7 +937,7 @@ func (v *Validator) set_trim(context *ValidatorContext, validationData *Validati
 	return rtnErrs
 }
 
-func (v *Validator) set_title(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
+func (v *Validator) string_title(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
 	rtnErrs := make([]error, 0)
 
 	_, obj, value := v.getValue(validationData.Value)
@@ -938,7 +955,7 @@ func (v *Validator) set_title(context *ValidatorContext, validationData *Validat
 	return rtnErrs
 }
 
-func (v *Validator) set_upper(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
+func (v *Validator) string_upper(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
 	rtnErrs := make([]error, 0)
 
 	_, obj, value := v.getValue(validationData.Value)
@@ -956,7 +973,7 @@ func (v *Validator) set_upper(context *ValidatorContext, validationData *Validat
 	return rtnErrs
 }
 
-func (v *Validator) set_lower(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
+func (v *Validator) string_lower(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
 	rtnErrs := make([]error, 0)
 
 	_, obj, value := v.getValue(validationData.Value)
@@ -974,6 +991,21 @@ func (v *Validator) set_lower(context *ValidatorContext, validationData *Validat
 	return rtnErrs
 }
 
+func (v *Validator) generate_random(strValue string) string {
+	rand.Seed(time.Now().UnixNano())
+	chars := []rune("abcdefghijklmnopqrstuvwxyz")
+
+	newValue := []rune(strValue)
+
+	for i, char := range newValue {
+		if !unicode.IsSpace(char) {
+			newValue[i] = chars[rand.Intn(len(chars))]
+		}
+	}
+
+	return string(newValue)
+}
+
 func (v *Validator) validate_encode(context *ValidatorContext, validationData *ValidationData, args ...interface{}) []error {
 	rtnErrs := make([]error, 0)
 
@@ -988,6 +1020,18 @@ func (v *Validator) validate_encode(context *ValidatorContext, validationData *V
 		case ConstEncodeMd5:
 			newValue := fmt.Sprintf("%x", md5.Sum([]byte(expected)))
 			setValue(kind, obj, newValue)
+		case ConstEncodeRandom:
+			_, obj, value := v.getValue(validationData.Value)
+
+			switch obj.Kind() {
+			case reflect.String:
+				strValue := fmt.Sprintf("%+v", value)
+				newValue := v.generate_random(strValue)
+
+				setValue(kind, obj, newValue)
+			default:
+				return rtnErrs
+			}
 		default:
 			err := fmt.Errorf("the encoding [%s] is invalid on field [%s]", encoding, validationData.Name)
 			rtnErrs = append(rtnErrs, err)

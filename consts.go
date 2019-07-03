@@ -15,7 +15,8 @@ const (
 	ConstSetTagForLower = "lower"
 	ConstSetTagForKey   = "key"
 
-	ConstEncodeMd5 = "md5"
+	ConstEncodeMd5    = "md5"
+	ConstEncodeRandom = "random"
 
 	ConstRegexForDateDDMMYYYY = `^(0?[1-9]|[12][0-9]|3[01])(/|-|.)([1-9]|0[0-9]|1[0-2])(/|-|.)[0-9]{4}$`
 	ConstRegexForDateYYYYMMDD = `^[0-9]{4}(/|-|.)(0?[1-9]|[12][0-9]|3[01])(/|-|.)([1-9]|0[0-9]|1[0-2])$`
@@ -50,6 +51,7 @@ const (
 	ConstTagSanitize = "sanitize"
 	ConstTagCallback = "callback"
 	ConstTagSet      = "set"
+	ConstTagString   = "string"
 	ConstTagKey      = "key"
 	ConstTagDistinct = "distinct"
 	ConstTagAlpha    = "alpha"
