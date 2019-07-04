@@ -82,8 +82,8 @@ type Example struct {
 	EncodeMd5               string      `validate:"encode=md5"`
 	EnableEncodeRandom      bool        `validate:"id=random_enable"`
 	EnableEncodeRandomTitle bool        `validate:"id=random_title_enable"`
-	EncodeRandom            string      `validate:"if=(id=random_enable value=true), encode=random, if=(id=random_title_enable value=true), string=title"`
-	EncodeRandomArg         string      `validate:"if=(arg=random_enable value=true), encode=random, if=(arg=random_title_enable value=true), string=title"`
+	EncodeRandom            string      `cleanup:"if=(id=random_enable value=true), encode=random, if=(id=random_title_enable value=true), string=title"`
+	EncodeRandomArg         string      `cleanup:"if=(arg=random_enable value=true), encode=random, if=(arg=random_title_enable value=true), string=title"`
 	EncodeX                 string      `validate:"encode=x"`
 	Interface               interface{} `validate:"notnull, notzero"`
 }
@@ -283,7 +283,19 @@ func main() {
 	fmt.Printf("\nBEFORE DISTINCT FLOAT: %+v", example.DistinctFloat)
 	fmt.Printf("\nBEFORE DISTINCT ARRAY2: %+v", example.Array2)
 
+	// validate
 	if errs := validator.Validate(&example,
+		validator.NewArgument("random_enable", false),
+		validator.NewArgument("random_title_enable", true),
+	); len(errs) > 0 {
+		fmt.Printf("\n\nERRORS: %d\n", len(errs))
+		for _, err := range errs {
+			fmt.Printf("\nERROR: %s", err)
+		}
+	}
+
+	// cleanup
+	if errs := validator.NewValidator().SetTag("cleanup").Validate(&example,
 		validator.NewArgument("random_enable", false),
 		validator.NewArgument("random_title_enable", true),
 	); len(errs) > 0 {
