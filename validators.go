@@ -36,7 +36,12 @@ func (v *Validator) loadExpectedValue(context *ValidatorContext, expected interf
 		if matched {
 			replacer := strings.NewReplacer("{", "", "}", "")
 			id := replacer.Replace(newExpected)
+
 			value, ok := context.GetValue(ConstTagId, id)
+			if !ok {
+				value, ok = context.GetValue(ConstTagArg, id)
+			}
+
 			if ok {
 				newExpected = fmt.Sprintf("%+v", value.obj.Interface())
 			}
