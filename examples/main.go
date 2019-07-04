@@ -84,6 +84,7 @@ type Example struct {
 	EnableEncodeRandomTitle bool        `validate:"id=random_title_enable"`
 	EncodeRandom            string      `cleanup:"if=(id=random_enable value=true), encode=random, if=(id=random_title_enable value=true), string=title"`
 	EncodeRandomArg         string      `cleanup:"if=(arg=random_enable value=true), encode=random, if=(arg=random_title_enable value=true), string=title"`
+	EncodeRandomClean       string      `cleanup:"if=(id=random_enable value=true), encode=random, if=(id=random_title_enable value=true), set="`
 	EncodeX                 string      `validate:"encode=x"`
 	Interface               interface{} `validate:"notnull, notzero"`
 }
@@ -245,6 +246,7 @@ func main() {
 		EnableEncodeRandomTitle: true,
 		EncodeRandom:            "o meu novo teste random",
 		EncodeRandomArg:         "o meu novo teste random",
+		EncodeRandomClean:       "o meu novo teste random",
 		EncodeX:                 "teste",
 		Brothers: []Example2{
 			Example2{
@@ -322,4 +324,5 @@ func main() {
 	fmt.Printf("\nENCODED MD5: %+v", example.EncodeMd5)
 	fmt.Printf("\nENCODED RANDOM: %+v", example.EncodeRandom)
 	fmt.Printf("\nENCODED RANDOM BY ARG: %+v", example.EncodeRandomArg)
+	fmt.Printf("\nENCODED RANDOM BY ARG CLEAN: %+v", example.EncodeRandomClean)
 }

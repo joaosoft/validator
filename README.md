@@ -140,8 +140,9 @@ type Example struct {
 	EncodeMd5               string      `validate:"encode=md5"`
 	EnableEncodeRandom      bool        `validate:"id=random_enable"`
 	EnableEncodeRandomTitle bool        `validate:"id=random_title_enable"`
-	EncodeRandom            string      `validate:"if=(id=random_enable value=true), encode=random, if=(id=random_title_enable value=true), string=title"`
-	EncodeRandomArg         string      `validate:"if=(arg=random_enable value=true), encode=random, if=(arg=random_title_enable value=true), string=title"`
+	EncodeRandom            string      `cleanup:"if=(id=random_enable value=true), encode=random, if=(id=random_title_enable value=true), string=title"`
+	EncodeRandomArg         string      `cleanup:"if=(arg=random_enable value=true), encode=random, if=(arg=random_title_enable value=true), string=title"`
+	EncodeRandomClean       string      `cleanup:"if=(id=random_enable value=true), encode=random, if=(id=random_title_enable value=true), set="`
 	EncodeX                 string      `validate:"encode=x"`
 	Interface               interface{} `validate:"notnull, notzero"`
 }
@@ -303,6 +304,7 @@ func main() {
 		EnableEncodeRandomTitle: true,
 		EncodeRandom:            "o meu novo teste random",
 		EncodeRandomArg:         "o meu novo teste random",
+		EncodeRandomClean:       "o meu novo teste random",
 		EncodeX:                 "teste",
 		Brothers: []Example2{
 			Example2{
@@ -342,26 +344,26 @@ func main() {
 	fmt.Printf("\nBEFORE DISTINCT ARRAY2: %+v", example.Array2)
 
 	// validate
-    if errs := validator.Validate(&example,
-        validator.NewArgument("random_enable", false),
-        validator.NewArgument("random_title_enable", true),
-    ); len(errs) > 0 {
-        fmt.Printf("\n\nERRORS: %d\n", len(errs))
-        for _, err := range errs {
-            fmt.Printf("\nERROR: %s", err)
-        }
-    }
+	if errs := validator.Validate(&example,
+		validator.NewArgument("random_enable", false),
+		validator.NewArgument("random_title_enable", true),
+	); len(errs) > 0 {
+		fmt.Printf("\n\nERRORS: %d\n", len(errs))
+		for _, err := range errs {
+			fmt.Printf("\nERROR: %s", err)
+		}
+	}
 
-    // cleanup
-    if errs := validator.NewValidator().SetTag("cleanup").Validate(&example,
-        validator.NewArgument("random_enable", false),
-        validator.NewArgument("random_title_enable", true),
-    ); len(errs) > 0 {
-        fmt.Printf("\n\nERRORS: %d\n", len(errs))
-        for _, err := range errs {
-            fmt.Printf("\nERROR: %s", err)
-        }
-    }
+	// cleanup
+	if errs := validator.NewValidator().SetTag("cleanup").Validate(&example,
+		validator.NewArgument("random_enable", false),
+		validator.NewArgument("random_title_enable", true),
+	); len(errs) > 0 {
+		fmt.Printf("\n\nERRORS: %d\n", len(errs))
+		for _, err := range errs {
+			fmt.Printf("\nERROR: %s", err)
+		}
+	}
 
 	fmt.Printf("\n\nAFTER SET: %d", example.Set)
 	fmt.Printf("\nAFTER NEXT SET: %d", example.NextSet.Set)
@@ -380,6 +382,7 @@ func main() {
 	fmt.Printf("\nENCODED MD5: %+v", example.EncodeMd5)
 	fmt.Printf("\nENCODED RANDOM: %+v", example.EncodeRandom)
 	fmt.Printf("\nENCODED RANDOM BY ARG: %+v", example.EncodeRandomArg)
+	fmt.Printf("\nENCODED RANDOM BY ARG CLEAN: %+v", example.EncodeRandomClean)
 }
 ```
 
@@ -392,7 +395,7 @@ BEFORE KEY:      AQUI       TEM     ESPACOS    !!
 BEFORE FROM KEY: 
 BEFORE UPPER:      aqui       TEM     espaços    !!   
 BEFORE LOWER:      AQUI       TEM     ESPACOS    !!   
-BEFORE DISTINCT INT POINTER: [0xc0000202f8 0xc0000202f8 0xc000020310 0xc000020310]
+BEFORE DISTINCT INT POINTER: [0xc00009c2b0 0xc00009c2b0 0xc00009c2b8 0xc00009c2b8]
 BEFORE DISTINCT INT: [1 1 2 2]
 BEFORE DISTINCT STRING: [a a b b]
 BEFORE DISTINCT BOOL: [true true false false]
@@ -450,15 +453,16 @@ AFTER FROM KEY: aaaaa-3245-79-tem-espacos-
 AFTER LOWER:      aqui       tem     espacos    !!   
 
 AFTER UPPER:      AQUI       TEM     ESPAÇOS    !!   
-AFTER DISTINCT INT POINTER: [0xc0000202f8 0xc000020310]
+AFTER DISTINCT INT POINTER: [0xc00009c2b0 0xc00009c2b8]
 AFTER DISTINCT INT: [1 2]
 AFTER DISTINCT STRING: [a b]
 AFTER DISTINCT BOOL: [true false]
 AFTER DISTINCT FLOAT: [1.1 1.2]
 AFTER DISTINCT ARRAY2: [111 222]
 ENCODED MD5: 698dc19d489c4e4db73e28a713eab07b
-ENCODED RANDOM: M Ubb Yfpe Mvnib Qdgprr
+ENCODED RANDOM: E Xqa Wlrk Evmhx Iwldim
 ENCODED RANDOM BY ARG: O Meu Novo Teste Random
+ENCODED RANDOM BY ARG CLEAN:
 ```
 
 ## Known issues
