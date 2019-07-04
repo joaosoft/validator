@@ -7,7 +7,7 @@ A simple struct validator by tags (exported fields only).
 
 ###### If i miss something or you have something interesting, please be part of this project. Let me know! My contact is at the end.
 
-## With support for
+## With support for validations
 ###### << command >>={id_field} can be used on all commands and will be replaced with the value of the field with id=id_field
 * value (equal to)
 * not (not equal to)
@@ -20,26 +20,38 @@ A simple struct validator by tags (exported fields only).
 * notnull 
 * isnull 
 * regex
-* special ( YYYYMMDD, DDMMYYYY, date, time, url, email )
-* sanitize (invalid characters)
+* url
+* email
+* uuid
+* base64
+* ip, ipv4, ipv6
 * callback (add handler validations)
 * error (simple and multi error handling `validate:"value=1, error={errorValue1}, max=10, error={errorMax10}"`)
 * if (conditional validation between fields with operators ("and", "or") [define id=xpto])
-* set (allows to set native values) to use this you need to use the variable address, like this `validator.Validate(&example)`
-with values ("the field id", "the field value"),  
-(key converts the value to a url valid key. You can also do key=xpto or key={id} where the id is other field id [example "This is a test" to "this-is-a-test"])
-* string (allows to do actions on string values) to use this you need to use the variable address, like this `validator.Validate(&example)`
-with values (trim, title, upper, lower),
-* key (allow to convert string into a url key)
-* distinct (remove duplicated values from slices of primitive types)
 * alpha (the value needs to be alphanumeric)
 * numeric (the value needs to be numeric)
 * bool (the value needs to be boolean [true or false])
 * item:<< command >>> (allows you to validate array or map items individually, [example: "item:size=10", means that the array items need to have the size of 10])
 * key:<< command >>> (allows you to validate a map key's individually, [example: "key:size=10", means that the map key's need to have the size of 10])
-* encode ([example: "encode=md5"])
-with values ("md5", "random"), 
+* prefix
+* suffix
+* contains
+
 * args (arguments that will be available on callbacks ValidationData struct)
+
+## With support for changing values
+###### << command >>={id_field} can be used on all commands and will be replaced with the value of the field with id=id_field
+###### to use this you need to use the variable address, like this `validator.Validate(&example)`
+* set (allows to set native values) 
+* set-md5
+* set-random
+* set-sanitize (clean characters)
+* set-key (converts the value to a url valid key. You can also do key=xpto or key={id} where the id is other field id [example "This is a test" to "this-is-a-test"])
+* set-trim
+* set-title
+* set-upper
+* set-lower
+* set-distinct (remove duplicated values from slices of primitive types)
 
 ## With methods for
 * AddBefore (add a before-validation)
@@ -87,7 +99,7 @@ type Items struct {
 
 type Example struct {
 	Array                   []string          `validate:"item:size=5"`
-	Array2                  []string          `validate:"item:distinct"`
+	Array2                  []string          `validate:"item:set-distinct"`
 	Array3                  Items             `validate:"item:size=5"`
 	Map4                    map[string]string `validate:"item:size=5, key:size=5"`
 	Name                    string            `validate:"value=joao, dummy_middle, error={ErrorTag1:a;b}, max=10"`
@@ -101,15 +113,11 @@ type Example struct {
 	Option4                 []int             `validate:"options=11;22;33, error={ErrorTag9}"`
 	Map1                    map[string]int    `validate:"options=aa:11;bb:22;cc:33, error={ErrorTag10}"`
 	Map2                    map[int]string    `validate:"options=11:aa;22:bb;33:cc, error={ErrorTag11}"`
-	SpecialTime             string            `validate:"special=time, error={ErrorTag12}"`
-	SpecialDate1            string            `validate:"special=date, error={ErrorTag13}"`
-	SpecialDate2            string            `validate:"special=YYYYMMDD, error={ErrorTag14}"`
-	SpecialDateString       *string           `validate:"special=YYYYMMDD, error={ErrorTag15}"`
-	SpecialData             *Data             `validate:"special=YYYYMMDD, error={ErrorTag16}"`
-	SpecialUrl              string            `validate:"special=url"`
+	Url                     string            `validate:"url"`
+	Email                   string            `validate:"email"`
 	unexported              string
 	IsNill                  *string `validate:"notzero, error={ErrorTag17}"`
-	Sanitize                string  `validate:"sanitize=a;b;teste, error={ErrorTag17}"`
+	Sanitize                string  `validate:"set-sanitize=a;b;teste, error={ErrorTag17}"`
 	Callback                string  `validate:"callback=dummy_callback;dummy_callback_2, error={ErrorTag19}"`
 	Password                string  `json:"password" validate:"id=password"`
 	PasswordConfirm         string  `validate:"value={password}"`
@@ -119,18 +127,18 @@ type Example struct {
 	DoubleValidation        int     `validate:"notzero, error=20, min=5, error={ErrorTag21}"`
 	Set                     int     `validate:"set=321, id=set"`
 	NextSet                 NextSet
-	DistinctIntPointer      []*int      `validate:"distinct"`
-	DistinctInt             []int       `validate:"distinct"`
-	DistinctString          []string    `validate:"distinct"`
-	DistinctBool            []bool      `validate:"distinct"`
-	DistinctFloat           []float32   `validate:"distinct"`
+	DistinctIntPointer      []*int      `validate:"set-distinct"`
+	DistinctInt             []int       `validate:"set-distinct"`
+	DistinctString          []string    `validate:"set-distinct"`
+	DistinctBool            []bool      `validate:"set-distinct"`
+	DistinctFloat           []float32   `validate:"set-distinct"`
 	IsZero                  int         `validate:"iszero"`
-	Trim                    string      `validate:"string=trim"`
-	Lower                   string      `validate:"string=lower"`
-	Upper                   string      `validate:"string=upper"`
-	Key                     string      `validate:"key"`
+	Trim                    string      `validate:"set-trim"`
+	Lower                   string      `validate:"set-lower"`
+	Upper                   string      `validate:"set-upper"`
+	Key                     string      `validate:"set-key"`
 	KeyValue                string      `validate:"id=my_value"`
-	KeyFromValue            string      `validate:"key={my_value}"`
+	KeyFromValue            string      `validate:"set-key={my_value}"`
 	NotMatch1               string      `validate:"id=not_match"`
 	NotMatch2               string      `validate:"not={not_match}"`
 	TypeAlpha               string      `validate:"alpha"`
@@ -138,40 +146,41 @@ type Example struct {
 	TypeBool                string      `validate:"bool"`
 	ShouldBeNull            *string     `validate:"isnull"`
 	ShouldNotBeNull         *string     `validate:"notnull"`
-	EncodeMd5               string      `validate:"encode=md5"`
+	FirstMd5                string      `validate:"set-md5"`
+	SecondMd5               string      `validate:"set-md5=ola"`
 	EnableEncodeRandom      bool        `validate:"id=random_enable"`
 	EnableEncodeRandomTitle bool        `validate:"id=random_title_enable"`
-	EncodeRandom            string      `cleanup:"if=(id=random_enable value=true), encode=random, if=(id=random_title_enable value=true), string=title"`
-	EncodeRandomArg         string      `cleanup:"if=(arg=random_enable value=true), encode=random, if=(arg=random_title_enable value=true), string=title"`
-	EncodeRandomClean       string      `cleanup:"if=(id=random_enable value=true), encode=random, if=(id=random_title_enable value=true), set="`
-	EncodeX                 string      `validate:"encode=x"`
+	Random                  string      `cleanup:"if=(id=random_enable value=true), set-random, if=(id=random_title_enable value=true), set-title"`
+	RandomArg               string      `cleanup:"if=(arg=random_enable value=true), set-random, if=(arg=random_title_enable value=true), set-title"`
+	RandomClean             string      `cleanup:"if=(id=random_enable value=true), set-random, if=(id=random_title_enable value=true), set="`
 	Interface               interface{} `validate:"notnull, notzero"`
+	StringPrefix            string      `validate:"prefix=ola"`
+	StringSuffix            string      `validate:"suffix=mundo"`
+	StringContains          string      `validate:"contains=a m"`
 }
 
 type Example2 struct {
-	Name              string         `validate:"value=joao, dummy_middle, error={ErrorTag1:a;b}, max=10"`
-	Age               int            `validate:"value=30, error={ErrorTag99}"`
-	Street            int            `validate:"max=10, error={ErrorTag3}"`
-	Id                uuid.UUID      `validate:"notzero, error={ErrorTag5}"`
-	Option1           string         `validate:"options=aa;bb;cc, error={ErrorTag6}"`
-	Option2           int            `validate:"options=11;22;33, error={ErrorTag7}"`
-	Option3           []string       `validate:"options=aa;bb;cc, error={ErrorTag8}"`
-	Option4           []int          `validate:"options=11;22;33, error={ErrorTag9}"`
-	Map1              map[string]int `validate:"options=aa:11;bb:22;cc:33, error={ErrorTag10}"`
-	Map2              map[int]string `validate:"options=11:aa;22:bb;33:cc, error={ErrorTag11}"`
-	SpecialTime       string         `validate:"special=time, error={ErrorTag12}"`
-	SpecialDate1      string         `validate:"special=date, error={ErrorTag13}"`
-	SpecialDate2      string         `validate:"special=YYYYMMDD, error={ErrorTag14}"`
-	SpecialDateString *string        `validate:"special=YYYYMMDD, error={ErrorTag15}"`
-	SpecialData       *Data          `validate:"special=YYYYMMDD, error={ErrorTag16}"`
-	SpecialUrl        string         `validate:"special=url"`
-	unexported        string
-	IsNill            *string `validate:"notzero, error={ErrorTag17}"`
-	Sanitize          string  `validate:"sanitize=a;b;teste, error={ErrorTag17}"`
-	Callback          string  `validate:"callback=dummy_callback, error={ErrorTag19}"`
-	CallbackArgs      string  `validate:"args=a;b;c, callback=dummy_args_callback"`
-	Password          string  `json:"password" validate:"id=password"`
-	PasswordConfirm   string  `validate:"value={password}"`
+	Name            string         `validate:"value=joao, dummy_middle, error={ErrorTag1:a;b}, max=10"`
+	Age             int            `validate:"value=30, error={ErrorTag99}"`
+	Street          int            `validate:"max=10, error={ErrorTag3}"`
+	Id              uuid.UUID      `validate:"notzero, error={ErrorTag5}"`
+	Option1         string         `validate:"options=aa;bb;cc, error={ErrorTag6}"`
+	Option2         int            `validate:"options=11;22;33, error={ErrorTag7}"`
+	Option3         []string       `validate:"options=aa;bb;cc, error={ErrorTag8}"`
+	Option4         []int          `validate:"options=11;22;33, error={ErrorTag9}"`
+	Map1            map[string]int `validate:"options=aa:11;bb:22;cc:33, error={ErrorTag10}"`
+	Map2            map[int]string `validate:"options=11:aa;22:bb;33:cc, error={ErrorTag11}"`
+	Url             string         `validate:"url"`
+	Email           string         `validate:"email"`
+	unexported      string
+	IsNill          *string   `validate:"notzero, error={ErrorTag17}"`
+	Sanitize        string    `validate:"set-sanitize=a;b;teste, error={ErrorTag17}"`
+	Callback        string    `validate:"callback=dummy_callback, error={ErrorTag19}"`
+	CallbackArgs    string    `validate:"args=a;b;c, callback=dummy_args_callback"`
+	Password        string    `json:"password" validate:"id=password"`
+	PasswordConfirm string    `validate:"value={password}"`
+	UUID            string    `validate:"uuid"`
+	UUIDStruct      uuid.UUID `validate:"uuid"`
 }
 
 var dummy_middle_handler = func(context *validator.ValidatorContext, validationData *validator.ValidationData) []error {
@@ -248,8 +257,10 @@ func main() {
 	intVal1 := 1
 	intVal2 := 2
 	id, _ := uuid.NewV4()
-	str := "2018-12-1"
-	data := Data("2018-12-1")
+	str := "should be null"
+	byts := [16]byte{}
+	copy(byts[:], "1234567890123456")
+
 	example := Example{
 		Array:  []string{"12345", "123456", "12345", "1234567"},
 		Array2: []string{"111", "111", "222", "222"},
@@ -257,30 +268,26 @@ func main() {
 			A: "123456",
 			B: 1234567,
 		},
-		Map4:              map[string]string{"123456": "1234567", "12345": "12345"},
-		Id:                id,
-		Name:              "joao",
-		Age:               30,
-		Street:            10,
-		Option1:           "aa",
-		Option2:           11,
-		Option3:           []string{"aa", "bb", "cc"},
-		Option4:           []int{11, 22, 33},
-		Map1:              map[string]int{"aa": 11, "bb": 22, "cc": 33},
-		Map2:              map[int]string{11: "aa", 22: "bb", 33: "cc"},
-		SpecialTime:       "12:01:00",
-		SpecialDate1:      "01-12-2018",
-		SpecialDate2:      "2018-12-1",
-		SpecialDateString: &str,
-		SpecialData:       &data,
-		SpecialUrl:        "xxx.xxx.teste.pt",
-		Password:          "password",
-		PasswordConfirm:   "password_errada",
-		MyName:            "joao",
-		MyAge:             30,
-		MyValidate:        30,
-		DoubleValidation:  0,
-		Set:               123,
+		Map4:             map[string]string{"123456": "1234567", "12345": "12345"},
+		Id:               id,
+		Name:             "joao",
+		Age:              30,
+		Street:           10,
+		Option1:          "aa",
+		Option2:          11,
+		Option3:          []string{"aa", "bb", "cc"},
+		Option4:          []int{11, 22, 33},
+		Map1:             map[string]int{"aa": 11, "bb": 22, "cc": 33},
+		Map2:             map[int]string{11: "aa", 22: "bb", 33: "cc"},
+		Url:              "google.com",
+		Email:            "joaosoft@gmail.com",
+		Password:         "password",
+		PasswordConfirm:  "password_errada",
+		MyName:           "joao",
+		MyAge:            30,
+		MyValidate:       30,
+		DoubleValidation: 0,
+		Set:              123,
 		NextSet: NextSet{
 			Set: 123,
 		},
@@ -300,13 +307,16 @@ func main() {
 		TypeNumeric:             "ABC",
 		TypeBool:                "ERRADO",
 		ShouldBeNull:            &str,
-		EncodeMd5:               "teste",
+		FirstMd5:                "first",
+		SecondMd5:               "second",
 		EnableEncodeRandom:      true,
 		EnableEncodeRandomTitle: true,
-		EncodeRandom:            "o meu novo teste random",
-		EncodeRandomArg:         "o meu novo teste random",
-		EncodeRandomClean:       "o meu novo teste random",
-		EncodeX:                 "teste",
+		Random:                  "o meu novo teste random",
+		RandomArg:               "o meu novo teste random",
+		RandomClean:             "o meu novo teste random",
+		StringPrefix:            "ola",
+		StringSuffix:            "mundo",
+		StringContains:          "a m",
 		Brothers: []Example2{
 			Example2{
 				Name:            "jessica",
@@ -318,13 +328,13 @@ func main() {
 				Option4:         []int{11, 44, 33},
 				Map1:            map[string]int{"aa": 11, "kk": 22, "cc": 33},
 				Map2:            map[int]string{11: "aa", 22: "bb", 99: "cc"},
-				SpecialTime:     "99:01:00",
-				SpecialDate1:    "01-99-2018",
-				SpecialDate2:    "2018-99-1",
 				Sanitize:        "b teste",
-				SpecialUrl:      "http://www.teste.pt",
+				Url:             "http://www.teste.pt",
+				Email:           "joaosoft@gmail.com",
 				Password:        "password",
 				PasswordConfirm: "password",
+				UUID:            "invalid",
+				UUIDStruct:      byts,
 			},
 		},
 	}
@@ -380,10 +390,11 @@ func main() {
 	fmt.Printf("\nAFTER DISTINCT BOOL: %+v", example.DistinctBool)
 	fmt.Printf("\nAFTER DISTINCT FLOAT: %+v", example.DistinctFloat)
 	fmt.Printf("\nAFTER DISTINCT ARRAY2: %+v", example.Array2)
-	fmt.Printf("\nENCODED MD5: %+v", example.EncodeMd5)
-	fmt.Printf("\nENCODED RANDOM: %+v", example.EncodeRandom)
-	fmt.Printf("\nENCODED RANDOM BY ARG: %+v", example.EncodeRandomArg)
-	fmt.Printf("\nENCODED RANDOM BY ARG CLEAN: %+v", example.EncodeRandomClean)
+	fmt.Printf("\nFIRST MD5: %+v", example.FirstMd5)
+	fmt.Printf("\nSECOND MD5: %+v", example.SecondMd5)
+	fmt.Printf("\nRANDOM: %+v", example.Random)
+	fmt.Printf("\nRANDOM BY ARG: %+v", example.RandomArg)
+	fmt.Printf("\nRANDOM BY ARG CLEAN: %+v", example.RandomClean)
 }
 ```
 
@@ -402,9 +413,11 @@ BEFORE DISTINCT STRING: [a a b b]
 BEFORE DISTINCT BOOL: [true true false false]
 BEFORE DISTINCT FLOAT: [1.1 1.1 1.2 1.2]
 BEFORE DISTINCT ARRAY2: [111 111 222 222]
-there are the following arguments [a b c]!
+there are the following arguments [a b c]!string
+uuid.UUID
 
-ERRORS: 38
+
+ERRORS: 36
 
 ERROR: the length [6] is lower then the expected [5] on field [Array] value [123456]
 ERROR: the length [7] is lower then the expected [5] on field [Array] value [1234567]
@@ -423,12 +436,11 @@ ERROR: error 8
 ERROR: error 9
 ERROR: error 10
 ERROR: error 11
-ERROR: error 12
-ERROR: error 13
-ERROR: error 14
 ERROR: error 17
 ERROR: error 17
 ERROR: error 19
+ERROR: the value [invalid] on field [UUID] should be a valid UUID
+ERROR: the value [google.com] on field [Url] should be a valid URL
 ERROR: error 17
 ERROR: error 19
 ERROR: the value [password_errada] is different of the expected [password] on field [PasswordConfirm]
@@ -439,9 +451,8 @@ ERROR: the expected [A] should be different of the [A] on field [NotMatch2]
 ERROR: the value [123] is invalid for type alphanumeric on field [TypeAlpha] value [123]
 ERROR: the value [ABC] is invalid for type numeric on field [TypeNumeric] value [ABC]
 ERROR: the value [ERRADO] is invalid for type bool on field [TypeBool] value [ERRADO]
-ERROR: the value should be null on field [ShouldBeNull] instead of [2018-12-1]
+ERROR: the value should be null on field [ShouldBeNull] instead of [should be null]
 ERROR: the value shouldn't be null on field [ShouldNotBeNull]
-ERROR: the encoding [x] is invalid on field [EncodeX]
 ERROR: the value shouldn't be null on field [Interface]
 ERROR: the value shouldn't be zero on field [Interface]
 
@@ -460,10 +471,11 @@ AFTER DISTINCT STRING: [a b]
 AFTER DISTINCT BOOL: [true false]
 AFTER DISTINCT FLOAT: [1.1 1.2]
 AFTER DISTINCT ARRAY2: [111 222]
-ENCODED MD5: 698dc19d489c4e4db73e28a713eab07b
-ENCODED RANDOM: P Tkk Luys Xbtdz Znzmdu
-ENCODED RANDOM BY ARG: O Meu Novo Teste Random
-ENCODED RANDOM BY ARG CLEAN: 
+FIRST MD5: 8b04d5e3775d298e78455efc5ca404d5
+SECOND MD5: 2fe04e524ba40505a82e03a2819429cc
+RANDOM: H Vcd Ojrz Bdbth Izmulk
+RANDOM BY ARG: O Meu Novo Teste Random
+RANDOM BY ARG CLEAN: 
 ```
 
 ## Known issues

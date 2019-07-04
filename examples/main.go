@@ -28,7 +28,7 @@ type Items struct {
 
 type Example struct {
 	Array                   []string          `validate:"item:size=5"`
-	Array2                  []string          `validate:"item:distinct"`
+	Array2                  []string          `validate:"item:set-distinct"`
 	Array3                  Items             `validate:"item:size=5"`
 	Map4                    map[string]string `validate:"item:size=5, key:size=5"`
 	Name                    string            `validate:"value=joao, dummy_middle, error={ErrorTag1:a;b}, max=10"`
@@ -42,15 +42,11 @@ type Example struct {
 	Option4                 []int             `validate:"options=11;22;33, error={ErrorTag9}"`
 	Map1                    map[string]int    `validate:"options=aa:11;bb:22;cc:33, error={ErrorTag10}"`
 	Map2                    map[int]string    `validate:"options=11:aa;22:bb;33:cc, error={ErrorTag11}"`
-	SpecialTime             string            `validate:"special=time, error={ErrorTag12}"`
-	SpecialDate1            string            `validate:"special=date, error={ErrorTag13}"`
-	SpecialDate2            string            `validate:"special=YYYYMMDD, error={ErrorTag14}"`
-	SpecialDateString       *string           `validate:"special=YYYYMMDD, error={ErrorTag15}"`
-	SpecialData             *Data             `validate:"special=YYYYMMDD, error={ErrorTag16}"`
-	SpecialUrl              string            `validate:"special=url"`
+	Url                     string            `validate:"url"`
+	Email                   string            `validate:"email"`
 	unexported              string
 	IsNill                  *string `validate:"notzero, error={ErrorTag17}"`
-	Sanitize                string  `validate:"sanitize=a;b;teste, error={ErrorTag17}"`
+	Sanitize                string  `validate:"set-sanitize=a;b;teste, error={ErrorTag17}"`
 	Callback                string  `validate:"callback=dummy_callback;dummy_callback_2, error={ErrorTag19}"`
 	Password                string  `json:"password" validate:"id=password"`
 	PasswordConfirm         string  `validate:"value={password}"`
@@ -60,18 +56,18 @@ type Example struct {
 	DoubleValidation        int     `validate:"notzero, error=20, min=5, error={ErrorTag21}"`
 	Set                     int     `validate:"set=321, id=set"`
 	NextSet                 NextSet
-	DistinctIntPointer      []*int      `validate:"distinct"`
-	DistinctInt             []int       `validate:"distinct"`
-	DistinctString          []string    `validate:"distinct"`
-	DistinctBool            []bool      `validate:"distinct"`
-	DistinctFloat           []float32   `validate:"distinct"`
+	DistinctIntPointer      []*int      `validate:"set-distinct"`
+	DistinctInt             []int       `validate:"set-distinct"`
+	DistinctString          []string    `validate:"set-distinct"`
+	DistinctBool            []bool      `validate:"set-distinct"`
+	DistinctFloat           []float32   `validate:"set-distinct"`
 	IsZero                  int         `validate:"iszero"`
-	Trim                    string      `validate:"string=trim"`
-	Lower                   string      `validate:"string=lower"`
-	Upper                   string      `validate:"string=upper"`
-	Key                     string      `validate:"key"`
+	Trim                    string      `validate:"set-trim"`
+	Lower                   string      `validate:"set-lower"`
+	Upper                   string      `validate:"set-upper"`
+	Key                     string      `validate:"set-key"`
 	KeyValue                string      `validate:"id=my_value"`
-	KeyFromValue            string      `validate:"key={my_value}"`
+	KeyFromValue            string      `validate:"set-key={my_value}"`
 	NotMatch1               string      `validate:"id=not_match"`
 	NotMatch2               string      `validate:"not={not_match}"`
 	TypeAlpha               string      `validate:"alpha"`
@@ -79,40 +75,41 @@ type Example struct {
 	TypeBool                string      `validate:"bool"`
 	ShouldBeNull            *string     `validate:"isnull"`
 	ShouldNotBeNull         *string     `validate:"notnull"`
-	EncodeMd5               string      `validate:"encode=md5"`
+	FirstMd5                string      `validate:"set-md5"`
+	SecondMd5               string      `validate:"set-md5=ola"`
 	EnableEncodeRandom      bool        `validate:"id=random_enable"`
 	EnableEncodeRandomTitle bool        `validate:"id=random_title_enable"`
-	EncodeRandom            string      `cleanup:"if=(id=random_enable value=true), encode=random, if=(id=random_title_enable value=true), string=title"`
-	EncodeRandomArg         string      `cleanup:"if=(arg=random_enable value=true), encode=random, if=(arg=random_title_enable value=true), string=title"`
-	EncodeRandomClean       string      `cleanup:"if=(id=random_enable value=true), encode=random, if=(id=random_title_enable value=true), set="`
-	EncodeX                 string      `validate:"encode=x"`
+	Random                  string      `cleanup:"if=(id=random_enable value=true), set-random, if=(id=random_title_enable value=true), set-title"`
+	RandomArg               string      `cleanup:"if=(arg=random_enable value=true), set-random, if=(arg=random_title_enable value=true), set-title"`
+	RandomClean             string      `cleanup:"if=(id=random_enable value=true), set-random, if=(id=random_title_enable value=true), set="`
 	Interface               interface{} `validate:"notnull, notzero"`
+	StringPrefix            string      `validate:"prefix=ola"`
+	StringSuffix            string      `validate:"suffix=mundo"`
+	StringContains          string      `validate:"contains=a m"`
 }
 
 type Example2 struct {
-	Name              string         `validate:"value=joao, dummy_middle, error={ErrorTag1:a;b}, max=10"`
-	Age               int            `validate:"value=30, error={ErrorTag99}"`
-	Street            int            `validate:"max=10, error={ErrorTag3}"`
-	Id                uuid.UUID      `validate:"notzero, error={ErrorTag5}"`
-	Option1           string         `validate:"options=aa;bb;cc, error={ErrorTag6}"`
-	Option2           int            `validate:"options=11;22;33, error={ErrorTag7}"`
-	Option3           []string       `validate:"options=aa;bb;cc, error={ErrorTag8}"`
-	Option4           []int          `validate:"options=11;22;33, error={ErrorTag9}"`
-	Map1              map[string]int `validate:"options=aa:11;bb:22;cc:33, error={ErrorTag10}"`
-	Map2              map[int]string `validate:"options=11:aa;22:bb;33:cc, error={ErrorTag11}"`
-	SpecialTime       string         `validate:"special=time, error={ErrorTag12}"`
-	SpecialDate1      string         `validate:"special=date, error={ErrorTag13}"`
-	SpecialDate2      string         `validate:"special=YYYYMMDD, error={ErrorTag14}"`
-	SpecialDateString *string        `validate:"special=YYYYMMDD, error={ErrorTag15}"`
-	SpecialData       *Data          `validate:"special=YYYYMMDD, error={ErrorTag16}"`
-	SpecialUrl        string         `validate:"special=url"`
-	unexported        string
-	IsNill            *string `validate:"notzero, error={ErrorTag17}"`
-	Sanitize          string  `validate:"sanitize=a;b;teste, error={ErrorTag17}"`
-	Callback          string  `validate:"callback=dummy_callback, error={ErrorTag19}"`
-	CallbackArgs      string  `validate:"args=a;b;c, callback=dummy_args_callback"`
-	Password          string  `json:"password" validate:"id=password"`
-	PasswordConfirm   string  `validate:"value={password}"`
+	Name            string         `validate:"value=joao, dummy_middle, error={ErrorTag1:a;b}, max=10"`
+	Age             int            `validate:"value=30, error={ErrorTag99}"`
+	Street          int            `validate:"max=10, error={ErrorTag3}"`
+	Id              uuid.UUID      `validate:"notzero, error={ErrorTag5}"`
+	Option1         string         `validate:"options=aa;bb;cc, error={ErrorTag6}"`
+	Option2         int            `validate:"options=11;22;33, error={ErrorTag7}"`
+	Option3         []string       `validate:"options=aa;bb;cc, error={ErrorTag8}"`
+	Option4         []int          `validate:"options=11;22;33, error={ErrorTag9}"`
+	Map1            map[string]int `validate:"options=aa:11;bb:22;cc:33, error={ErrorTag10}"`
+	Map2            map[int]string `validate:"options=11:aa;22:bb;33:cc, error={ErrorTag11}"`
+	Url             string         `validate:"url"`
+	Email           string         `validate:"email"`
+	unexported      string
+	IsNill          *string   `validate:"notzero, error={ErrorTag17}"`
+	Sanitize        string    `validate:"set-sanitize=a;b;teste, error={ErrorTag17}"`
+	Callback        string    `validate:"callback=dummy_callback, error={ErrorTag19}"`
+	CallbackArgs    string    `validate:"args=a;b;c, callback=dummy_args_callback"`
+	Password        string    `json:"password" validate:"id=password"`
+	PasswordConfirm string    `validate:"value={password}"`
+	UUID            string    `validate:"uuid"`
+	UUIDStruct      uuid.UUID `validate:"uuid"`
 }
 
 var dummy_middle_handler = func(context *validator.ValidatorContext, validationData *validator.ValidationData) []error {
@@ -189,8 +186,10 @@ func main() {
 	intVal1 := 1
 	intVal2 := 2
 	id, _ := uuid.NewV4()
-	str := "2018-12-1"
-	data := Data("2018-12-1")
+	str := "should be null"
+	byts := [16]byte{}
+	copy(byts[:], "1234567890123456")
+
 	example := Example{
 		Array:  []string{"12345", "123456", "12345", "1234567"},
 		Array2: []string{"111", "111", "222", "222"},
@@ -198,30 +197,26 @@ func main() {
 			A: "123456",
 			B: 1234567,
 		},
-		Map4:              map[string]string{"123456": "1234567", "12345": "12345"},
-		Id:                id,
-		Name:              "joao",
-		Age:               30,
-		Street:            10,
-		Option1:           "aa",
-		Option2:           11,
-		Option3:           []string{"aa", "bb", "cc"},
-		Option4:           []int{11, 22, 33},
-		Map1:              map[string]int{"aa": 11, "bb": 22, "cc": 33},
-		Map2:              map[int]string{11: "aa", 22: "bb", 33: "cc"},
-		SpecialTime:       "12:01:00",
-		SpecialDate1:      "01-12-2018",
-		SpecialDate2:      "2018-12-1",
-		SpecialDateString: &str,
-		SpecialData:       &data,
-		SpecialUrl:        "xxx.xxx.teste.pt",
-		Password:          "password",
-		PasswordConfirm:   "password_errada",
-		MyName:            "joao",
-		MyAge:             30,
-		MyValidate:        30,
-		DoubleValidation:  0,
-		Set:               123,
+		Map4:             map[string]string{"123456": "1234567", "12345": "12345"},
+		Id:               id,
+		Name:             "joao",
+		Age:              30,
+		Street:           10,
+		Option1:          "aa",
+		Option2:          11,
+		Option3:          []string{"aa", "bb", "cc"},
+		Option4:          []int{11, 22, 33},
+		Map1:             map[string]int{"aa": 11, "bb": 22, "cc": 33},
+		Map2:             map[int]string{11: "aa", 22: "bb", 33: "cc"},
+		Url:              "google.com",
+		Email:            "joaosoft@gmail.com",
+		Password:         "password",
+		PasswordConfirm:  "password_errada",
+		MyName:           "joao",
+		MyAge:            30,
+		MyValidate:       30,
+		DoubleValidation: 0,
+		Set:              123,
 		NextSet: NextSet{
 			Set: 123,
 		},
@@ -241,13 +236,16 @@ func main() {
 		TypeNumeric:             "ABC",
 		TypeBool:                "ERRADO",
 		ShouldBeNull:            &str,
-		EncodeMd5:               "teste",
+		FirstMd5:                "first",
+		SecondMd5:               "second",
 		EnableEncodeRandom:      true,
 		EnableEncodeRandomTitle: true,
-		EncodeRandom:            "o meu novo teste random",
-		EncodeRandomArg:         "o meu novo teste random",
-		EncodeRandomClean:       "o meu novo teste random",
-		EncodeX:                 "teste",
+		Random:                  "o meu novo teste random",
+		RandomArg:               "o meu novo teste random",
+		RandomClean:             "o meu novo teste random",
+		StringPrefix:            "ola",
+		StringSuffix:            "mundo",
+		StringContains:          "a m",
 		Brothers: []Example2{
 			Example2{
 				Name:            "jessica",
@@ -259,13 +257,13 @@ func main() {
 				Option4:         []int{11, 44, 33},
 				Map1:            map[string]int{"aa": 11, "kk": 22, "cc": 33},
 				Map2:            map[int]string{11: "aa", 22: "bb", 99: "cc"},
-				SpecialTime:     "99:01:00",
-				SpecialDate1:    "01-99-2018",
-				SpecialDate2:    "2018-99-1",
 				Sanitize:        "b teste",
-				SpecialUrl:      "http://www.teste.pt",
+				Url:             "http://www.teste.pt",
+				Email:           "joaosoft@gmail.com",
 				Password:        "password",
 				PasswordConfirm: "password",
+				UUID:            "invalid",
+				UUIDStruct:      byts,
 			},
 		},
 	}
@@ -321,8 +319,9 @@ func main() {
 	fmt.Printf("\nAFTER DISTINCT BOOL: %+v", example.DistinctBool)
 	fmt.Printf("\nAFTER DISTINCT FLOAT: %+v", example.DistinctFloat)
 	fmt.Printf("\nAFTER DISTINCT ARRAY2: %+v", example.Array2)
-	fmt.Printf("\nENCODED MD5: %+v", example.EncodeMd5)
-	fmt.Printf("\nENCODED RANDOM: %+v", example.EncodeRandom)
-	fmt.Printf("\nENCODED RANDOM BY ARG: %+v", example.EncodeRandomArg)
-	fmt.Printf("\nENCODED RANDOM BY ARG CLEAN: %+v", example.EncodeRandomClean)
+	fmt.Printf("\nFIRST MD5: %+v", example.FirstMd5)
+	fmt.Printf("\nSECOND MD5: %+v", example.SecondMd5)
+	fmt.Printf("\nRANDOM: %+v", example.Random)
+	fmt.Printf("\nRANDOM BY ARG: %+v", example.RandomArg)
+	fmt.Printf("\nRANDOM BY ARG CLEAN: %+v", example.RandomClean)
 }

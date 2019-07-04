@@ -3,8 +3,11 @@ package validator
 import (
 	"bytes"
 	"crypto/md5"
+	"encoding/base64"
 	"fmt"
 	"math/rand"
+	"net"
+	"net/url"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -17,54 +20,15 @@ import (
 	"github.com/satori/go.uuid"
 )
 
-func (v *Validator) getValue(value reflect.Value) (isNull bool, _ reflect.Value, _ interface{}) {
-	if value.Kind() == reflect.Ptr {
-		if value.IsNil() {
-			return true, value, value.Interface()
-		}
-		return value.Elem().Interface() == nil, value.Elem(), value.Elem().Interface()
-	}
-
-	return value.Interface() == nil, value, value.Interface()
-}
-
-func (v *Validator) loadExpectedValue(context *ValidatorContext, expected interface{}) (string, error) {
-	var newExpected string
-
-	if expected != nil {
-		newExpected = fmt.Sprintf("%+v", expected)
-	}
-
-	if matched, err := regexp.MatchString(ConstRegexForTagValue, newExpected); err != nil {
-		return "", err
-	} else {
-		if matched {
-			replacer := strings.NewReplacer("{", "", "}", "")
-			id := replacer.Replace(newExpected)
-
-			value, ok := context.GetValue(ConstTagId, id)
-			if !ok {
-				value, ok = context.GetValue(ConstTagArg, id)
-			}
-
-			if ok {
-				newExpected = fmt.Sprintf("%+v", value.obj.Interface())
-			}
-		}
-	}
-
-	return newExpected, nil
-}
-
 func (v *Validator) validate_value(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
-	isNull, _, value := v.getValue(validationData.Value)
+	isNull, _, value := v._getValue(validationData.Value)
 	if isNull || fmt.Sprintf("%+v", value) == "" {
 		return rtnErrs
 	}
 
-	expected, err := v.loadExpectedValue(context, validationData.Expected)
+	expected, err := v._loadExpectedValue(context, validationData.Expected)
 	if err != nil {
 		rtnErrs = append(rtnErrs, err)
 		return rtnErrs
@@ -78,10 +42,10 @@ func (v *Validator) validate_value(context *ValidatorContext, validationData *Va
 	return rtnErrs
 }
 
-func (v *Validator) validate_sanitize(context *ValidatorContext, validationData *ValidationData) []error {
+func (v *Validator) validate_set_sanitize(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
-	isNull, _, value := v.getValue(validationData.Value)
+	isNull, _, value := v._getValue(validationData.Value)
 	if isNull || fmt.Sprintf("%+v", value) == "" {
 		return rtnErrs
 	}
@@ -115,12 +79,12 @@ func (v *Validator) validate_sanitize(context *ValidatorContext, validationData 
 func (v *Validator) validate_not(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
-	isNull, _, value := v.getValue(validationData.Value)
+	isNull, _, value := v._getValue(validationData.Value)
 	if isNull || fmt.Sprintf("%+v", value) == "" {
 		return rtnErrs
 	}
 
-	expected, err := v.loadExpectedValue(context, validationData.Expected)
+	expected, err := v._loadExpectedValue(context, validationData.Expected)
 	if err != nil {
 		rtnErrs = append(rtnErrs, err)
 		return rtnErrs
@@ -137,7 +101,7 @@ func (v *Validator) validate_not(context *ValidatorContext, validationData *Vali
 func (v *Validator) validate_options(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
-	isNull, obj, value := v.getValue(validationData.Value)
+	isNull, obj, value := v._getValue(validationData.Value)
 	if isNull || fmt.Sprintf("%+v", value) == "" {
 		return rtnErrs
 	}
@@ -150,7 +114,7 @@ func (v *Validator) validate_options(context *ValidatorContext, validationData *
 		var err error
 		optionsVal := make(map[string]bool)
 		for _, option := range options {
-			option, err = v.loadExpectedValue(context, option)
+			option, err = v._loadExpectedValue(context, option)
 			if err != nil {
 				rtnErrs = append(rtnErrs, err)
 				if !v.validateAll {
@@ -189,7 +153,7 @@ func (v *Validator) validate_options(context *ValidatorContext, validationData *
 			}
 
 			var err error
-			values[1], err = v.loadExpectedValue(context, values[1])
+			values[1], err = v._loadExpectedValue(context, values[1])
 			if err != nil {
 				rtnErrs = append(rtnErrs, err)
 				if !v.validateAll {
@@ -224,7 +188,7 @@ func (v *Validator) validate_options(context *ValidatorContext, validationData *
 		var err error
 		optionsVal := make(map[string]bool)
 		for _, option := range options {
-			option, err = v.loadExpectedValue(context, option)
+			option, err = v._loadExpectedValue(context, option)
 			if err != nil {
 				rtnErrs = append(rtnErrs, err)
 				if !v.validateAll {
@@ -250,8 +214,8 @@ func (v *Validator) validate_options(context *ValidatorContext, validationData *
 func (v *Validator) validate_size(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
-	isNull, obj, value := v.getValue(validationData.Value)
-	expected, err := v.loadExpectedValue(context, validationData.Expected)
+	isNull, obj, value := v._getValue(validationData.Value)
+	expected, err := v._loadExpectedValue(context, validationData.Expected)
 	if err != nil {
 		rtnErrs = append(rtnErrs, err)
 		return rtnErrs
@@ -295,13 +259,13 @@ func (v *Validator) validate_size(context *ValidatorContext, validationData *Val
 func (v *Validator) validate_min(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
-	expected, err := v.loadExpectedValue(context, validationData.Expected)
+	expected, err := v._loadExpectedValue(context, validationData.Expected)
 	if err != nil {
 		rtnErrs = append(rtnErrs, err)
 		return rtnErrs
 	}
 
-	isNull, obj, value := v.getValue(validationData.Value)
+	isNull, obj, value := v._getValue(validationData.Value)
 	min, e := strconv.Atoi(expected)
 	if e != nil {
 		err := fmt.Errorf("the size [%s] is invalid on field [%s] value [%+v]", expected, validationData.Name, value)
@@ -340,13 +304,13 @@ func (v *Validator) validate_min(context *ValidatorContext, validationData *Vali
 func (v *Validator) validate_max(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
-	expected, err := v.loadExpectedValue(context, validationData.Expected)
+	expected, err := v._loadExpectedValue(context, validationData.Expected)
 	if err != nil {
 		rtnErrs = append(rtnErrs, err)
 		return rtnErrs
 	}
 
-	isNull, obj, value := v.getValue(validationData.Value)
+	isNull, obj, value := v._getValue(validationData.Value)
 	max, e := strconv.Atoi(expected)
 	if e != nil {
 		err := fmt.Errorf("the size [%s] is invalid on field [%s] value [%+v]", validationData.Expected, validationData.Name, value)
@@ -396,7 +360,7 @@ func (v *Validator) validate_notzero(context *ValidatorContext, validationData *
 func (v *Validator) validate_isnull(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
-	isNull, _, value := v.getValue(validationData.Value)
+	isNull, _, value := v._getValue(validationData.Value)
 	if !isNull {
 		err := fmt.Errorf("the value should be null on field [%s] instead of [%+v]", validationData.Name, value)
 		rtnErrs = append(rtnErrs, err)
@@ -421,7 +385,7 @@ func (v *Validator) validate_iszero(context *ValidatorContext, validationData *V
 
 	var isZero bool
 
-	isNull, obj, value := v.getValue(validationData.Value)
+	isNull, obj, value := v._getValue(validationData.Value)
 	switch obj.Kind() {
 	case reflect.Array, reflect.Slice, reflect.Map:
 
@@ -464,7 +428,7 @@ func (v *Validator) validate_regex(context *ValidatorContext, validationData *Va
 
 	rtnErrs := make([]error, 0)
 
-	isNull, _, value := v.getValue(validationData.Value)
+	isNull, _, value := v._getValue(validationData.Value)
 	val := fmt.Sprintf("%+v", value)
 	if isNull || val == "" {
 		return rtnErrs
@@ -484,40 +448,6 @@ func (v *Validator) validate_regex(context *ValidatorContext, validationData *Va
 	}
 
 	return rtnErrs
-}
-
-func (v *Validator) validate_special(context *ValidatorContext, validationData *ValidationData) []error {
-
-	rtnErrs := make([]error, 0)
-
-	isNull, _, value := v.getValue(validationData.Value)
-	strValue := fmt.Sprintf("%+v", value)
-	if isNull || strValue == "" {
-		return rtnErrs
-	}
-
-	switch validationData.Expected {
-	case ConstSpecialTagForDateDefault:
-		validationData.Expected = ConstRegexForDateDefault
-	case ConstSpecialTagForDateDDMMYYYY:
-		validationData.Expected = ConstRegexForDateDDMMYYYY
-	case ConstSpecialTagForDateYYYYMMDD:
-		validationData.Expected = ConstRegexForDateYYYYMMDD
-	case ConstSpecialTagForTimeDefault:
-		validationData.Expected = ConstRegexForTimeDefault
-	case ConstSpecialTagForTimeHHMMSS:
-		validationData.Expected = ConstRegexForTimeHHMMSS
-	case ConstSpecialTagForURL:
-		validationData.Expected = ConstRegexForURL
-	case ConstSpecialTagForEmail:
-		validationData.Expected = ConstRegexForEmail
-	default:
-		err := fmt.Errorf("invalid special [%s] on field [%+v] value [%+v]", validationData.Expected, validationData.Name, value)
-		rtnErrs = append(rtnErrs, err)
-		return rtnErrs
-	}
-
-	return v.validate_regex(context, validationData)
 }
 
 func (v *Validator) validate_callback(context *ValidatorContext, validationData *ValidationData) []error {
@@ -732,29 +662,93 @@ func (v *Validator) validate_if(context *ValidatorContext, validationData *Valid
 	return nil
 }
 
-func (v *Validator) validate_string(context *ValidatorContext, validationData *ValidationData) []error {
+func (v *Validator) validate_set_trim(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
-	_, obj, _ := v.getValue(validationData.Value)
+	_, obj, value := v._getValue(validationData.Value)
 	if !obj.CanAddr() {
 		err := fmt.Errorf("the object should be passed as a pointer! when validating field [%+v]", validationData.Name)
 		rtnErrs = append(rtnErrs, err)
 		return rtnErrs
 	}
 
-	function := fmt.Sprintf("%+v", validationData.Expected)
-	switch function {
-	case ConstSetTagForTrim:
-		v.string_trim(context, validationData)
-	case ConstSetTagForTitle:
-		v.string_title(context, validationData)
-	case ConstSetTagForLower:
-		v.string_lower(context, validationData)
-	case ConstSetTagForUpper:
-		v.string_upper(context, validationData)
-	case ConstSetTagForKey:
-		v.validate_key(context, validationData)
-	default:
+	kind := reflect.TypeOf(value).Kind()
+
+	switch kind {
+	case reflect.String:
+		newValue := strings.TrimSpace(value.(string))
+
+		r, err := regexp.Compile("  +")
+		if err != nil {
+			rtnErrs = append(rtnErrs, err)
+			return rtnErrs
+		}
+
+		newValue = string(r.ReplaceAll(bytes.TrimSpace([]byte(newValue)), []byte(" ")))
+		setValue(kind, obj, newValue)
+	}
+
+	return rtnErrs
+}
+
+func (v *Validator) validate_set_title(context *ValidatorContext, validationData *ValidationData) []error {
+	rtnErrs := make([]error, 0)
+
+	_, obj, value := v._getValue(validationData.Value)
+	if !obj.CanAddr() {
+		err := fmt.Errorf("the object should be passed as a pointer! when validating field [%+v]", validationData.Name)
+		rtnErrs = append(rtnErrs, err)
+		return rtnErrs
+	}
+
+	kind := reflect.TypeOf(value).Kind()
+
+	switch kind {
+	case reflect.String:
+		newValue := strings.Title(value.(string))
+		setValue(kind, obj, newValue)
+	}
+
+	return rtnErrs
+}
+
+func (v *Validator) validate_set_upper(context *ValidatorContext, validationData *ValidationData) []error {
+	rtnErrs := make([]error, 0)
+
+	_, obj, value := v._getValue(validationData.Value)
+	if !obj.CanAddr() {
+		err := fmt.Errorf("the object should be passed as a pointer! when validating field [%+v]", validationData.Name)
+		rtnErrs = append(rtnErrs, err)
+		return rtnErrs
+	}
+
+	kind := reflect.TypeOf(value).Kind()
+
+	switch kind {
+	case reflect.String:
+		newValue := strings.ToUpper(value.(string))
+		setValue(kind, obj, newValue)
+	}
+
+	return rtnErrs
+}
+
+func (v *Validator) validate_set_lower(context *ValidatorContext, validationData *ValidationData) []error {
+	rtnErrs := make([]error, 0)
+
+	_, obj, value := v._getValue(validationData.Value)
+	if !obj.CanAddr() {
+		err := fmt.Errorf("the object should be passed as a pointer! when validating field [%+v]", validationData.Name)
+		rtnErrs = append(rtnErrs, err)
+		return rtnErrs
+	}
+
+	kind := reflect.TypeOf(value).Kind()
+
+	switch kind {
+	case reflect.String:
+		newValue := strings.ToLower(value.(string))
+		setValue(kind, obj, newValue)
 	}
 
 	return rtnErrs
@@ -763,7 +757,7 @@ func (v *Validator) validate_string(context *ValidatorContext, validationData *V
 func (v *Validator) validate_set(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
-	_, obj, value := v.getValue(validationData.Value)
+	_, obj, value := v._getValue(validationData.Value)
 	if !obj.CanAddr() {
 		err := fmt.Errorf("the object should be passed as a pointer! when validating field [%+v]", validationData.Name)
 		rtnErrs = append(rtnErrs, err)
@@ -799,61 +793,89 @@ func (v *Validator) validate_set(context *ValidatorContext, validationData *Vali
 	return rtnErrs
 }
 
-func (v *Validator) encode_md5(context *ValidatorContext, validationData *ValidationData) []error {
+func (v *Validator) validate_set_md5(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
-	_, obj, value := v.getValue(validationData.Value)
-	expected := fmt.Sprintf("%+v", value)
+
+	_, obj, value := v._getValue(validationData.Value)
+	if !obj.CanAddr() {
+		err := fmt.Errorf("the object should be passed as a pointer! when validating field [%+v]", validationData.Name)
+		rtnErrs = append(rtnErrs, err)
+		return rtnErrs
+	}
+
 	kind := reflect.TypeOf(value).Kind()
-
-	newValue := fmt.Sprintf("%x", md5.Sum([]byte(expected)))
-	setValue(kind, obj, newValue)
-
-	return rtnErrs
-}
-
-func (v *Validator) validate_key(context *ValidatorContext, validationData *ValidationData) []error {
-	rtnErrs := make([]error, 0)
-
-	_, obj, value := v.getValue(validationData.Value)
-	if obj.CanAddr() {
-		kind := reflect.TypeOf(value).Kind()
-
-		switch kind {
-		case reflect.String:
-			expected, err := v.loadExpectedValue(context, validationData.Expected)
-			if err != nil {
-				rtnErrs = append(rtnErrs, err)
-				return rtnErrs
-			}
-
-			if expected == "" {
-				expected = fmt.Sprintf("%+v", value)
-			}
-
-			setValue(kind, obj, convertToKey(strings.TrimSpace(expected), true))
+	switch kind {
+	case reflect.String:
+		expected, err := v._loadExpectedValue(context, validationData.Expected)
+		if err != nil {
+			rtnErrs = append(rtnErrs, err)
+			return rtnErrs
 		}
+
+		if expected == "" {
+			expected = fmt.Sprintf("%+v", value)
+		}
+
+		newValue := fmt.Sprintf("%x", md5.Sum([]byte(expected)))
+		setValue(kind, obj, newValue)
 	}
 
 	return rtnErrs
 }
 
-func (v *Validator) encode_random(context *ValidatorContext, validationData *ValidationData) []error {
+func (v *Validator) validate_set_key(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
-	_, obj, value := v.getValue(validationData.Value)
+	_, obj, value := v._getValue(validationData.Value)
+	if !obj.CanAddr() {
+		err := fmt.Errorf("the object should be passed as a pointer! when validating field [%+v]", validationData.Name)
+		rtnErrs = append(rtnErrs, err)
+		return rtnErrs
+	}
 
-	if obj.CanAddr() {
-		kind := reflect.TypeOf(value).Kind()
-
-		switch obj.Kind() {
-		case reflect.String:
-			strValue := fmt.Sprintf("%+v", value)
-			newValue := v.generate_random(strValue)
-
-			setValue(kind, obj, newValue)
-		default:
+	kind := reflect.TypeOf(value).Kind()
+	switch kind {
+	case reflect.String:
+		expected, err := v._loadExpectedValue(context, validationData.Expected)
+		if err != nil {
+			rtnErrs = append(rtnErrs, err)
 			return rtnErrs
 		}
+
+		if expected == "" {
+			expected = fmt.Sprintf("%+v", value)
+		}
+
+		setValue(kind, obj, convertToKey(strings.TrimSpace(expected), true))
+	}
+
+	return rtnErrs
+}
+
+func (v *Validator) validate_set_random(context *ValidatorContext, validationData *ValidationData) []error {
+	rtnErrs := make([]error, 0)
+
+	_, obj, value := v._getValue(validationData.Value)
+	if !obj.CanAddr() {
+		err := fmt.Errorf("the object should be passed as a pointer! when validating field [%+v]", validationData.Name)
+		rtnErrs = append(rtnErrs, err)
+		return rtnErrs
+	}
+
+	kind := reflect.TypeOf(value).Kind()
+	switch kind {
+	case reflect.String:
+		expected, err := v._loadExpectedValue(context, validationData.Expected)
+		if err != nil {
+			rtnErrs = append(rtnErrs, err)
+			return rtnErrs
+		}
+
+		if expected == "" {
+			expected = fmt.Sprintf("%+v", value)
+		}
+
+		setValue(kind, obj, v._random(expected))
 	}
 
 	return rtnErrs
@@ -878,7 +900,7 @@ func setValue(kind reflect.Kind, obj reflect.Value, newValue interface{}) {
 func (v *Validator) validate_distinct(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
-	_, parentObj, parentValue := v.getValue(validationData.Parent)
+	_, parentObj, parentValue := v._getValue(validationData.Parent)
 
 	if parentObj.CanAddr() {
 		kind := reflect.TypeOf(parentValue).Kind()
@@ -925,7 +947,7 @@ func (v *Validator) validate_distinct(context *ValidatorContext, validationData 
 func (v *Validator) validate_alpha(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
-	isNil, _, value := v.getValue(validationData.Value)
+	isNil, _, value := v._getValue(validationData.Value)
 	expected := fmt.Sprintf("%+v", value)
 
 	if expected == "" || isNil {
@@ -946,7 +968,7 @@ func (v *Validator) validate_alpha(context *ValidatorContext, validationData *Va
 func (v *Validator) validate_numeric(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
-	isNil, _, value := v.getValue(validationData.Value)
+	isNil, _, value := v._getValue(validationData.Value)
 	expected := fmt.Sprintf("%+v", value)
 
 	if expected == "" || isNil {
@@ -967,7 +989,7 @@ func (v *Validator) validate_numeric(context *ValidatorContext, validationData *
 func (v *Validator) validate_bool(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
-	isNil, _, value := v.getValue(validationData.Value)
+	isNil, _, value := v._getValue(validationData.Value)
 	expected := fmt.Sprintf("%+v", value)
 
 	if expected == "" || isNil {
@@ -984,110 +1006,213 @@ func (v *Validator) validate_bool(context *ValidatorContext, validationData *Val
 	return rtnErrs
 }
 
-func (v *Validator) string_trim(context *ValidatorContext, validationData *ValidationData) []error {
+func (v *Validator) validate_prefix(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
-	_, obj, value := v.getValue(validationData.Value)
+	_, _, value := v._getValue(validationData.Value)
 
-	if obj.CanAddr() {
-		kind := reflect.TypeOf(value).Kind()
+	kind := reflect.TypeOf(value).Kind()
+	switch kind {
+	case reflect.String:
+		expected, err := v._loadExpectedValue(context, validationData.Expected)
+		if err != nil {
+			rtnErrs = append(rtnErrs, err)
+			return rtnErrs
+		}
 
-		switch kind {
-		case reflect.String:
-			newValue := strings.TrimSpace(value.(string))
-			regx := regexp.MustCompile("  +")
-			newValue = string(regx.ReplaceAll(bytes.TrimSpace([]byte(newValue)), []byte(" ")))
-			setValue(kind, obj, newValue)
+		strValue := fmt.Sprintf("%+v", value)
+		if !strings.HasPrefix(strValue, expected) {
+			err := fmt.Errorf("the value on field [%s] should have the prefix [%s] instead of [%s]", validationData.Name, expected, strValue)
+			rtnErrs = append(rtnErrs, err)
 		}
 	}
 
 	return rtnErrs
 }
 
-func (v *Validator) string_title(context *ValidatorContext, validationData *ValidationData) []error {
+func (v *Validator) validate_suffix(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
-	_, obj, value := v.getValue(validationData.Value)
+	_, _, value := v._getValue(validationData.Value)
 
-	if obj.CanAddr() {
-		kind := reflect.TypeOf(value).Kind()
+	kind := reflect.TypeOf(value).Kind()
+	switch kind {
+	case reflect.String:
+		expected, err := v._loadExpectedValue(context, validationData.Expected)
+		if err != nil {
+			rtnErrs = append(rtnErrs, err)
+			return rtnErrs
+		}
 
-		switch kind {
-		case reflect.String:
-			newValue := strings.Title(value.(string))
-			setValue(kind, obj, newValue)
+		strValue := fmt.Sprintf("%+v", value)
+		if !strings.HasSuffix(strValue, expected) {
+			err := fmt.Errorf("the value on field [%s] should have the suffix to [%s] instead of [%s]", validationData.Name, expected, strValue)
+			rtnErrs = append(rtnErrs, err)
 		}
 	}
 
 	return rtnErrs
 }
 
-func (v *Validator) string_upper(context *ValidatorContext, validationData *ValidationData) []error {
+func (v *Validator) validate_contains(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
-	_, obj, value := v.getValue(validationData.Value)
+	_, _, value := v._getValue(validationData.Value)
 
-	if obj.CanAddr() {
-		kind := reflect.TypeOf(value).Kind()
+	kind := reflect.TypeOf(value).Kind()
+	switch kind {
+	case reflect.String:
+		expected, err := v._loadExpectedValue(context, validationData.Expected)
+		if err != nil {
+			rtnErrs = append(rtnErrs, err)
+			return rtnErrs
+		}
 
-		switch kind {
-		case reflect.String:
-			newValue := strings.ToUpper(value.(string))
-			setValue(kind, obj, newValue)
+		strValue := fmt.Sprintf("%+v", value)
+		if !strings.Contains(strValue, expected) {
+			err := fmt.Errorf("the value on field [%s] should contain [%s] instead of [%s]", validationData.Name, expected, strValue)
+			rtnErrs = append(rtnErrs, err)
 		}
 	}
 
 	return rtnErrs
 }
 
-func (v *Validator) string_lower(context *ValidatorContext, validationData *ValidationData) []error {
+func (v *Validator) validate_uuid(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
+	check := false
 
-	_, obj, value := v.getValue(validationData.Value)
+	_, obj, value := v._getValue(validationData.Value)
 
-	if obj.CanAddr() {
-		kind := reflect.TypeOf(value).Kind()
+	var strValue string
+	fmt.Println(obj.Type())
+	switch obj.Type() {
+	case reflect.TypeOf(uuid.UUID{}):
+		check = true
+		strValue = obj.Interface().(uuid.UUID).String()
+	case reflect.TypeOf(strValue):
+		check = true
+		strValue = fmt.Sprintf("%+v", value)
+	}
 
-		switch kind {
-		case reflect.String:
-			newValue := strings.ToLower(value.(string))
-			setValue(kind, obj, newValue)
+	if check {
+		if _, err := uuid.FromString(strValue); err != nil {
+			err := fmt.Errorf("the value [%s] on field [%s] should be a valid UUID", strValue, validationData.Name)
+			rtnErrs = append(rtnErrs, err)
 		}
 	}
 
 	return rtnErrs
 }
 
-func (v *Validator) generate_random(strValue string) string {
-	rand.Seed(time.Now().UnixNano())
-	chars := []rune("abcdefghijklmnopqrstuvwxyz")
+func (v *Validator) validate_ip(context *ValidatorContext, validationData *ValidationData) []error {
+	rtnErrs := make([]error, 0)
 
-	newValue := []rune(strValue)
+	_, _, value := v._getValue(validationData.Value)
 
-	for i, char := range newValue {
-		if !unicode.IsSpace(char) {
-			newValue[i] = chars[rand.Intn(len(chars))]
+	kind := reflect.TypeOf(value).Kind()
+	switch kind {
+	case reflect.String:
+		strValue := fmt.Sprintf("%+v", value)
+		if ip := net.ParseIP(strValue); ip == nil {
+			err := fmt.Errorf("the value [%s] on field [%s] should be a valid IP", strValue, validationData.Name)
+			rtnErrs = append(rtnErrs, err)
 		}
 	}
 
-	return string(newValue)
+	return rtnErrs
 }
 
-func (v *Validator) validate_encode(context *ValidatorContext, validationData *ValidationData) []error {
+func (v *Validator) validate_ipv4(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
-	_, obj, _ := v.getValue(validationData.Value)
+	_, _, value := v._getValue(validationData.Value)
 
-	encoding := strings.ToLower(validationData.Expected.(string))
+	kind := reflect.TypeOf(value).Kind()
+	switch kind {
+	case reflect.String:
+		strValue := fmt.Sprintf("%+v", value)
+		if ip := net.ParseIP(strValue); ip == nil || ip.To4() == nil {
+			err := fmt.Errorf("the value [%s] on field [%s] should be a valid IPv4", strValue, validationData.Name)
+			rtnErrs = append(rtnErrs, err)
+		}
+	}
 
-	if obj.CanAddr() {
-		switch encoding {
-		case ConstEncodeMd5:
-			v.encode_md5(context, validationData)
-		case ConstEncodeRandom:
-			v.encode_random(context, validationData)
-		default:
-			err := fmt.Errorf("the encoding [%s] is invalid on field [%s]", encoding, validationData.Name)
+	return rtnErrs
+}
+
+func (v *Validator) validate_ipv6(context *ValidatorContext, validationData *ValidationData) []error {
+	rtnErrs := make([]error, 0)
+
+	_, _, value := v._getValue(validationData.Value)
+
+	kind := reflect.TypeOf(value).Kind()
+	switch kind {
+	case reflect.String:
+		strValue := fmt.Sprintf("%+v", value)
+		if ip := net.ParseIP(strValue); ip == nil || ip.To16() == nil {
+			err := fmt.Errorf("the value [%s] on field [%s] should be a valid IPv6", strValue, validationData.Name)
+			rtnErrs = append(rtnErrs, err)
+		}
+	}
+
+	return rtnErrs
+}
+
+func (v *Validator) validate_email(context *ValidatorContext, validationData *ValidationData) []error {
+	rtnErrs := make([]error, 0)
+
+	_, _, value := v._getValue(validationData.Value)
+
+	kind := reflect.TypeOf(value).Kind()
+	switch kind {
+	case reflect.String:
+		strValue := fmt.Sprintf("%+v", value)
+
+		r, err := regexp.Compile(ConstRegexForEmail)
+		if err != nil {
+			rtnErrs = append(rtnErrs, err)
+			return rtnErrs
+		}
+
+		if !r.MatchString(strValue) {
+			err := fmt.Errorf("the value [%s] on field [%s] should be a valid Email", strValue, validationData.Name)
+			rtnErrs = append(rtnErrs, err)
+		}
+	}
+
+	return rtnErrs
+}
+
+func (v *Validator) validate_url(context *ValidatorContext, validationData *ValidationData) []error {
+	rtnErrs := make([]error, 0)
+
+	_, _, value := v._getValue(validationData.Value)
+
+	kind := reflect.TypeOf(value).Kind()
+	switch kind {
+	case reflect.String:
+		strValue := fmt.Sprintf("%+v", value)
+		if _, err := url.ParseRequestURI(strValue); err != nil {
+			err := fmt.Errorf("the value [%s] on field [%s] should be a valid URL", strValue, validationData.Name)
+			rtnErrs = append(rtnErrs, err)
+		}
+	}
+
+	return rtnErrs
+}
+
+func (v *Validator) validate_base64(context *ValidatorContext, validationData *ValidationData) []error {
+	rtnErrs := make([]error, 0)
+
+	_, _, value := v._getValue(validationData.Value)
+
+	kind := reflect.TypeOf(value).Kind()
+	switch kind {
+	case reflect.String:
+		strValue := fmt.Sprintf("%+v", value)
+		if _, err := base64.StdEncoding.DecodeString(strValue); err != nil {
+			err := fmt.Errorf("the value [%s] on field [%s] should be a valid Base64", strValue, validationData.Name)
 			rtnErrs = append(rtnErrs, err)
 		}
 	}
@@ -1105,4 +1230,58 @@ func (v *Validator) validate_args(context *ValidatorContext, validationData *Val
 	}
 
 	return rtnErrs
+}
+
+func (v *Validator) _getValue(value reflect.Value) (isNull bool, _ reflect.Value, _ interface{}) {
+	if value.Kind() == reflect.Ptr {
+		if value.IsNil() {
+			return true, value, value.Interface()
+		}
+		return value.Elem().Interface() == nil, value.Elem(), value.Elem().Interface()
+	}
+
+	return value.Interface() == nil, value, value.Interface()
+}
+
+func (v *Validator) _loadExpectedValue(context *ValidatorContext, expected interface{}) (string, error) {
+	var newExpected string
+
+	if expected != nil {
+		newExpected = fmt.Sprintf("%+v", expected)
+	}
+
+	if matched, err := regexp.MatchString(ConstRegexForTagValue, newExpected); err != nil {
+		return "", err
+	} else {
+		if matched {
+			replacer := strings.NewReplacer("{", "", "}", "")
+			id := replacer.Replace(newExpected)
+
+			value, ok := context.GetValue(ConstTagId, id)
+			if !ok {
+				value, ok = context.GetValue(ConstTagArg, id)
+			}
+
+			if ok {
+				newExpected = fmt.Sprintf("%+v", value.obj.Interface())
+			}
+		}
+	}
+
+	return newExpected, nil
+}
+
+func (v *Validator) _random(strValue string) string {
+	rand.Seed(time.Now().UnixNano())
+	chars := []rune("abcdefghijklmnopqrstuvwxyz")
+
+	newValue := []rune(strValue)
+
+	for i, char := range newValue {
+		if !unicode.IsSpace(char) {
+			newValue[i] = chars[rand.Intn(len(chars))]
+		}
+	}
+
+	return string(newValue)
 }
