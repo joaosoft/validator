@@ -19,7 +19,7 @@ func (v *Validator) newDefaultMiddleHandlers() map[string]middleTagHandler {
 		ConstTagSet:      v.validate_set,
 		ConstTagString:   v.validate_string,
 		ConstTagDistinct: v.validate_distinct,
-		ConstTagKey:      v.string_key,
+		ConstTagKey:      v.validate_key,
 		ConstTagAlpha:    v.validate_alpha,
 		ConstTagNumeric:  v.validate_numeric,
 		ConstTagBool:     v.validate_bool,

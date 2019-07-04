@@ -29,7 +29,12 @@ func (v *Validator) getValue(value reflect.Value) (isNull bool, _ reflect.Value,
 }
 
 func (v *Validator) loadExpectedValue(context *ValidatorContext, expected interface{}) (string, error) {
-	newExpected := fmt.Sprintf("%+v", expected)
+	var newExpected string
+
+	if expected != nil {
+		newExpected = fmt.Sprintf("%+v", expected)
+	}
+
 	if matched, err := regexp.MatchString(ConstRegexForTagValue, newExpected); err != nil {
 		return "", err
 	} else {
@@ -748,7 +753,7 @@ func (v *Validator) validate_string(context *ValidatorContext, validationData *V
 	case ConstSetTagForUpper:
 		v.string_upper(context, validationData)
 	case ConstSetTagForKey:
-		v.string_key(context, validationData)
+		v.validate_key(context, validationData)
 	default:
 	}
 
@@ -794,7 +799,19 @@ func (v *Validator) validate_set(context *ValidatorContext, validationData *Vali
 	return rtnErrs
 }
 
-func (v *Validator) string_key(context *ValidatorContext, validationData *ValidationData) []error {
+func (v *Validator) encode_md5(context *ValidatorContext, validationData *ValidationData) []error {
+	rtnErrs := make([]error, 0)
+	_, obj, value := v.getValue(validationData.Value)
+	expected := fmt.Sprintf("%+v", value)
+	kind := reflect.TypeOf(value).Kind()
+
+	newValue := fmt.Sprintf("%x", md5.Sum([]byte(expected)))
+	setValue(kind, obj, newValue)
+
+	return rtnErrs
+}
+
+func (v *Validator) validate_key(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
 	_, obj, value := v.getValue(validationData.Value)
@@ -809,7 +826,33 @@ func (v *Validator) string_key(context *ValidatorContext, validationData *Valida
 				return rtnErrs
 			}
 
+			if expected == "" {
+				expected = fmt.Sprintf("%+v", value)
+			}
+
 			setValue(kind, obj, convertToKey(strings.TrimSpace(expected), true))
+		}
+	}
+
+	return rtnErrs
+}
+
+func (v *Validator) encode_random(context *ValidatorContext, validationData *ValidationData) []error {
+	rtnErrs := make([]error, 0)
+
+	_, obj, value := v.getValue(validationData.Value)
+
+	if obj.CanAddr() {
+		kind := reflect.TypeOf(value).Kind()
+
+		switch obj.Kind() {
+		case reflect.String:
+			strValue := fmt.Sprintf("%+v", value)
+			newValue := v.generate_random(strValue)
+
+			setValue(kind, obj, newValue)
+		default:
+			return rtnErrs
 		}
 	}
 
@@ -1033,29 +1076,16 @@ func (v *Validator) generate_random(strValue string) string {
 func (v *Validator) validate_encode(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
-	_, obj, value := v.getValue(validationData.Value)
-	expected := fmt.Sprintf("%+v", value)
+	_, obj, _ := v.getValue(validationData.Value)
+
 	encoding := strings.ToLower(validationData.Expected.(string))
 
 	if obj.CanAddr() {
-		kind := reflect.TypeOf(value).Kind()
-
 		switch encoding {
 		case ConstEncodeMd5:
-			newValue := fmt.Sprintf("%x", md5.Sum([]byte(expected)))
-			setValue(kind, obj, newValue)
+			v.encode_md5(context, validationData)
 		case ConstEncodeRandom:
-			_, obj, value := v.getValue(validationData.Value)
-
-			switch obj.Kind() {
-			case reflect.String:
-				strValue := fmt.Sprintf("%+v", value)
-				newValue := v.generate_random(strValue)
-
-				setValue(kind, obj, newValue)
-			default:
-				return rtnErrs
-			}
+			v.encode_random(context, validationData)
 		default:
 			err := fmt.Errorf("the encoding [%s] is invalid on field [%s]", encoding, validationData.Name)
 			rtnErrs = append(rtnErrs, err)

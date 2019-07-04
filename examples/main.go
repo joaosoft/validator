@@ -69,7 +69,7 @@ type Example struct {
 	Trim                    string      `validate:"string=trim"`
 	Lower                   string      `validate:"string=lower"`
 	Upper                   string      `validate:"string=upper"`
-	Key                     string      `validate:"string=key"`
+	Key                     string      `validate:"key"`
 	KeyValue                string      `validate:"id=my_value"`
 	KeyFromValue            string      `validate:"key={my_value}"`
 	NotMatch1               string      `validate:"id=not_match"`

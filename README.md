@@ -29,7 +29,8 @@ A simple struct validator by tags (exported fields only).
 with values ("the field id", "the field value"),  
 (key converts the value to a url valid key. You can also do key=xpto or key={id} where the id is other field id [example "This is a test" to "this-is-a-test"])
 * string (allows to do actions on string values) to use this you need to use the variable address, like this `validator.Validate(&example)`
-with values (trim, title, upper, lower, key),
+with values (trim, title, upper, lower),
+* key (allow to convert string into a url key)
 * distinct (remove duplicated values from slices of primitive types)
 * alpha (the value needs to be alphanumeric)
 * numeric (the value needs to be numeric)
@@ -127,7 +128,7 @@ type Example struct {
 	Trim                    string      `validate:"string=trim"`
 	Lower                   string      `validate:"string=lower"`
 	Upper                   string      `validate:"string=upper"`
-	Key                     string      `validate:"string=key"`
+	Key                     string      `validate:"key"`
 	KeyValue                string      `validate:"id=my_value"`
 	KeyFromValue            string      `validate:"key={my_value}"`
 	NotMatch1               string      `validate:"id=not_match"`
@@ -395,7 +396,7 @@ BEFORE KEY:      AQUI       TEM     ESPACOS    !!
 BEFORE FROM KEY: 
 BEFORE UPPER:      aqui       TEM     espaços    !!   
 BEFORE LOWER:      AQUI       TEM     ESPACOS    !!   
-BEFORE DISTINCT INT POINTER: [0xc00009c2b0 0xc00009c2b0 0xc00009c2b8 0xc00009c2b8]
+BEFORE DISTINCT INT POINTER: [0xc0000202f8 0xc0000202f8 0xc000020310 0xc000020310]
 BEFORE DISTINCT INT: [1 1 2 2]
 BEFORE DISTINCT STRING: [a a b b]
 BEFORE DISTINCT BOOL: [true true false false]
@@ -447,22 +448,22 @@ ERROR: the value shouldn't be zero on field [Interface]
 AFTER SET: 321
 AFTER NEXT SET: 321
 AFTER TRIM: aqui TEM espaços !!
-AFTER KEY: key
+AFTER KEY: aqui-tem-espacos-
 AFTER FROM KEY: aaaaa-3245-79-tem-espacos-
 
 AFTER LOWER:      aqui       tem     espacos    !!   
 
 AFTER UPPER:      AQUI       TEM     ESPAÇOS    !!   
-AFTER DISTINCT INT POINTER: [0xc00009c2b0 0xc00009c2b8]
+AFTER DISTINCT INT POINTER: [0xc0000202f8 0xc000020310]
 AFTER DISTINCT INT: [1 2]
 AFTER DISTINCT STRING: [a b]
 AFTER DISTINCT BOOL: [true false]
 AFTER DISTINCT FLOAT: [1.1 1.2]
 AFTER DISTINCT ARRAY2: [111 222]
 ENCODED MD5: 698dc19d489c4e4db73e28a713eab07b
-ENCODED RANDOM: E Xqa Wlrk Evmhx Iwldim
+ENCODED RANDOM: P Tkk Luys Xbtdz Znzmdu
 ENCODED RANDOM BY ARG: O Meu Novo Teste Random
-ENCODED RANDOM BY ARG CLEAN:
+ENCODED RANDOM BY ARG CLEAN: 
 ```
 
 ## Known issues
