@@ -8,8 +8,9 @@ import (
 
 func (v *Validator) newDefaultValues() defaultValues {
 	return map[string]map[string]*data{
-		ConstTagId:  make(map[string]*data),
-		ConstTagArg: make(map[string]*data),
+		ConstTagId:   make(map[string]*data),
+		ConstTagJson: make(map[string]*data),
+		ConstTagArg:  make(map[string]*data),
 	}
 }
 
@@ -87,6 +88,7 @@ func (v *ValidatorContext) load(value reflect.Value, errs *[]error) error {
 	switch value.Kind() {
 	case reflect.Struct:
 		for i := 0; i < types.NumField(); i++ {
+			var dat *data
 			nextValue := value.Field(i)
 			nextType := types.Field(i)
 
@@ -95,9 +97,10 @@ func (v *ValidatorContext) load(value reflect.Value, errs *[]error) error {
 			}
 
 			tagValue, exists := nextType.Tag.Lookup(v.validator.tag)
-			if !exists || strings.Contains(tagValue, fmt.Sprintf("%s=", ConstTagId)) {
+
+			// save id sub tags
+			if exists && strings.Contains(tagValue, fmt.Sprintf("%s=", ConstTagId)) {
 				var id string
-				var dat *data
 
 				split := strings.Split(tagValue, ",")
 				var tag []string
@@ -131,6 +134,17 @@ func (v *ValidatorContext) load(value reflect.Value, errs *[]error) error {
 					}
 				}
 				v.SetValue(tag[0], id, dat)
+			}
+
+			// save json tags
+			tagValue, exists = nextType.Tag.Lookup(ConstTagJson)
+			if exists && tagValue != "-" {
+				split := strings.Split(tagValue, ",")
+				dat = &data{
+					obj: nextValue,
+					typ: nextType,
+				}
+				v.SetValue(ConstTagJson, split[0], dat)
 			}
 
 			if err := v.load(nextValue, errs); err != nil {

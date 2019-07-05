@@ -10,6 +10,8 @@ const (
 	ConstPrefixTagItem = "item"
 	ConstPrefixTagKey  = "key"
 
+	ConstTagJson = "json"
+
 	ConstTagId       = "id"
 	ConstTagArg      = "arg"
 	ConstTagValue    = "value"

@@ -8,7 +8,7 @@ A simple struct validator by tags (exported fields only).
 ###### If i miss something or you have something interesting, please be part of this project. Let me know! My contact is at the end.
 
 ## With support for validations
-###### << command >>={id_field} can be used on all commands and will be replaced with the value of the field with id=id_field
+###### << command >>={id_field} can be used on all commands and will be replaced with the value of the field with id=id_field; if not exists by the manual sent args, if not exists json:"id_field"
 * value (equal to)
 * not (not equal to)
 * options (one of the options)
@@ -42,7 +42,7 @@ A simple struct validator by tags (exported fields only).
 * args (arguments that will be available on callbacks ValidationData struct)
 
 ## With support for changing values
-###### << command >>={id_field} can be used on all commands and will be replaced with the value of the field with id=id_field
+###### << command >>={id_field} can be used on all commands and will be replaced with the value of the field with id=id_field; if not exists by the manual sent args, if not exists json:"id_field"
 ###### to use this you need to use the variable address, like this `validator.Validate(&example)`
 * set (allows to set native values) 
 * set-md5
@@ -413,7 +413,7 @@ BEFORE KEY:      AQUI       TEM     ESPACOS    !!
 BEFORE FROM KEY: 
 BEFORE UPPER:      aqui       TEM     espaços    !!   
 BEFORE LOWER:      AQUI       TEM     ESPACOS    !!   
-BEFORE DISTINCT INT POINTER: [0xc00008e2b0 0xc00008e2b0 0xc00008e2b8 0xc00008e2b8]
+BEFORE DISTINCT INT POINTER: [0xc0000202f8 0xc0000202f8 0xc000020310 0xc000020310]
 BEFORE DISTINCT INT: [1 1 2 2]
 BEFORE DISTINCT STRING: [a a b b]
 BEFORE DISTINCT BOOL: [true true false false]
@@ -463,21 +463,21 @@ ERROR: the value shouldn't be zero on field [Interface]
 AFTER SET: 321
 AFTER NEXT SET: 321
 AFTER TRIM: aqui TEM espaços !!
-AFTER KEY: aqui-tem-espacos-
+AFTER KEY: 
 AFTER FROM KEY: aaaaa-3245-79-tem-espacos-
 
 AFTER LOWER:      aqui       tem     espacos    !!   
 
 AFTER UPPER:      AQUI       TEM     ESPAÇOS    !!   
-AFTER DISTINCT INT POINTER: [0xc00008e2b0 0xc00008e2b8]
+AFTER DISTINCT INT POINTER: [0xc0000202f8 0xc000020310]
 AFTER DISTINCT INT: [1 2]
 AFTER DISTINCT STRING: [a b]
 AFTER DISTINCT BOOL: [true false]
 AFTER DISTINCT FLOAT: [1.1 1.2]
 AFTER DISTINCT ARRAY2: [111 222]
-FIRST MD5: 8b04d5e3775d298e78455efc5ca404d5
+FIRST MD5: d41d8cd98f00b204e9800998ecf8427e
 SECOND MD5: 2fe04e524ba40505a82e03a2819429cc
-RANDOM: U Hrv Afxp Uikvd Czykpt 221
+RANDOM: A Oys Hvoh Idnsm Rndynx 405
 RANDOM BY ARG: O Meu Novo Teste Random 123
 RANDOM BY ARG CLEAN: 
 ```

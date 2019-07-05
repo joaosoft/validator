@@ -879,7 +879,7 @@ func (v *Validator) validate_set_random(context *ValidatorContext, validationDat
 			return rtnErrs
 		}
 
-		if expected == "" {
+		if v._convertToString(expected) == "" {
 			expected = value
 		}
 
@@ -1282,30 +1282,31 @@ func (v *Validator) _getValue(value reflect.Value) (isNil bool, _ reflect.Value,
 }
 
 func (v *Validator) _loadExpectedValue(context *ValidatorContext, expected interface{}) (interface{}, error) {
-	var strValue string
 
 	if expected != nil && v._convertToString(expected) != "" {
-		strValue = v._convertToString(expected)
-	}
+		strValue := v._convertToString(expected)
+		if matched, err := regexp.MatchString(ConstRegexForTagValue, strValue); err != nil {
+			return "", err
+		} else {
+			if matched {
+				replacer := strings.NewReplacer("{", "", "}", "")
+				id := replacer.Replace(strValue)
 
-	if matched, err := regexp.MatchString(ConstRegexForTagValue, strValue); err != nil {
-		return "", err
-	} else {
-		if matched {
-			replacer := strings.NewReplacer("{", "", "}", "")
-			id := replacer.Replace(strValue)
+				value, ok := context.GetValue(ConstTagId, id)
+				if !ok {
+					value, ok = context.GetValue(ConstTagArg, id)
+					if !ok {
+						value, ok = context.GetValue(ConstTagJson, id)
+					}
+				}
 
-			value, ok := context.GetValue(ConstTagId, id)
-			if !ok {
-				value, ok = context.GetValue(ConstTagArg, id)
-			}
-
-			if ok {
-				return value.obj.Interface(), nil
+				if ok {
+					return value.obj.Interface(), nil
+				}
 			}
 		}
-	}
 
+	}
 	return expected, nil
 }
 
