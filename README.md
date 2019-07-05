@@ -36,6 +36,8 @@ A simple struct validator by tags (exported fields only).
 * prefix
 * suffix
 * contains
+* hex
+* file
 
 * args (arguments that will be available on callbacks ValidationData struct)
 
@@ -157,6 +159,8 @@ type Example struct {
 	StringPrefix            string      `validate:"prefix=ola"`
 	StringSuffix            string      `validate:"suffix=mundo"`
 	StringContains          string      `validate:"contains=a m"`
+	Hex                     string      `validate:"hex"`
+	File                    string      `validate:"file"`
 }
 
 type Example2 struct {
@@ -311,12 +315,14 @@ func main() {
 		SecondMd5:               "second",
 		EnableEncodeRandom:      true,
 		EnableEncodeRandomTitle: true,
-		Random:                  "o meu novo teste random",
-		RandomArg:               "o meu novo teste random",
-		RandomClean:             "o meu novo teste random",
+		Random:                  "o meu novo teste random 123",
+		RandomArg:               "o meu novo teste random 123",
+		RandomClean:             "o meu novo teste random 123",
 		StringPrefix:            "ola",
 		StringSuffix:            "mundo",
 		StringContains:          "a m",
+		Hex:                     "48656c6c6f20476f7068657221",
+		File:                    "./README.md",
 		Brothers: []Example2{
 			Example2{
 				Name:            "jessica",
@@ -407,15 +413,13 @@ BEFORE KEY:      AQUI       TEM     ESPACOS    !!
 BEFORE FROM KEY: 
 BEFORE UPPER:      aqui       TEM     espaços    !!   
 BEFORE LOWER:      AQUI       TEM     ESPACOS    !!   
-BEFORE DISTINCT INT POINTER: [0xc0000202f8 0xc0000202f8 0xc000020310 0xc000020310]
+BEFORE DISTINCT INT POINTER: [0xc00008e2b0 0xc00008e2b0 0xc00008e2b8 0xc00008e2b8]
 BEFORE DISTINCT INT: [1 1 2 2]
 BEFORE DISTINCT STRING: [a a b b]
 BEFORE DISTINCT BOOL: [true true false false]
 BEFORE DISTINCT FLOAT: [1.1 1.1 1.2 1.2]
 BEFORE DISTINCT ARRAY2: [111 111 222 222]
-there are the following arguments [a b c]!string
-uuid.UUID
-
+there are the following arguments [a b c]!
 
 ERRORS: 36
 
@@ -465,7 +469,7 @@ AFTER FROM KEY: aaaaa-3245-79-tem-espacos-
 AFTER LOWER:      aqui       tem     espacos    !!   
 
 AFTER UPPER:      AQUI       TEM     ESPAÇOS    !!   
-AFTER DISTINCT INT POINTER: [0xc0000202f8 0xc000020310]
+AFTER DISTINCT INT POINTER: [0xc00008e2b0 0xc00008e2b8]
 AFTER DISTINCT INT: [1 2]
 AFTER DISTINCT STRING: [a b]
 AFTER DISTINCT BOOL: [true false]
@@ -473,8 +477,8 @@ AFTER DISTINCT FLOAT: [1.1 1.2]
 AFTER DISTINCT ARRAY2: [111 222]
 FIRST MD5: 8b04d5e3775d298e78455efc5ca404d5
 SECOND MD5: 2fe04e524ba40505a82e03a2819429cc
-RANDOM: H Vcd Ojrz Bdbth Izmulk
-RANDOM BY ARG: O Meu Novo Teste Random
+RANDOM: U Hrv Afxp Uikvd Czykpt 221
+RANDOM BY ARG: O Meu Novo Teste Random 123
 RANDOM BY ARG CLEAN: 
 ```
 

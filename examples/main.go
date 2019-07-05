@@ -86,6 +86,8 @@ type Example struct {
 	StringPrefix            string      `validate:"prefix=ola"`
 	StringSuffix            string      `validate:"suffix=mundo"`
 	StringContains          string      `validate:"contains=a m"`
+	Hex                     string      `validate:"hex"`
+	File                    string      `validate:"file"`
 }
 
 type Example2 struct {
@@ -240,12 +242,14 @@ func main() {
 		SecondMd5:               "second",
 		EnableEncodeRandom:      true,
 		EnableEncodeRandomTitle: true,
-		Random:                  "o meu novo teste random",
-		RandomArg:               "o meu novo teste random",
-		RandomClean:             "o meu novo teste random",
+		Random:                  "o meu novo teste random 123",
+		RandomArg:               "o meu novo teste random 123",
+		RandomClean:             "o meu novo teste random 123",
 		StringPrefix:            "ola",
 		StringSuffix:            "mundo",
 		StringContains:          "a m",
+		Hex:                     "48656c6c6f20476f7068657221",
+		File:                    "./README.md",
 		Brothers: []Example2{
 			Example2{
 				Name:            "jessica",

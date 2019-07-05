@@ -40,6 +40,8 @@ const (
 	ConstTagBase64   = "base64"
 	ConstTagEmail    = "email"
 	ConstTagURL      = "url"
+	ConstTagHex      = "hex"
+	ConstTagFile     = "file"
 
 	ConstTagSet         = "set"
 	ConstTagSetDistinct = "set-distinct"

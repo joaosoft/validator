@@ -28,6 +28,8 @@ func (v *Validator) newDefaultMiddleHandlers() map[string]middleTagHandler {
 		ConstTagBase64:      v.validate_base64,
 		ConstTagEmail:       v.validate_email,
 		ConstTagURL:         v.validate_url,
+		ConstTagHex:         v.validate_hex,
+		ConstTagFile:        v.validate_file,
 
 		ConstTagSet:         v.validate_set,
 		ConstTagSetTrim:     v.validate_set_trim,

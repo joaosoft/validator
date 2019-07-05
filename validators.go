@@ -4,10 +4,12 @@ import (
 	"bytes"
 	"crypto/md5"
 	"encoding/base64"
+	"encoding/hex"
 	"fmt"
 	"math/rand"
 	"net"
 	"net/url"
+	"os"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -1219,6 +1221,42 @@ func (v *Validator) validate_base64(context *ValidatorContext, validationData *V
 	return rtnErrs
 }
 
+func (v *Validator) validate_hex(context *ValidatorContext, validationData *ValidationData) []error {
+	rtnErrs := make([]error, 0)
+
+	_, _, value := v._getValue(validationData.Value)
+
+	kind := reflect.TypeOf(value).Kind()
+	switch kind {
+	case reflect.String:
+		strValue := fmt.Sprintf("%+v", value)
+		if _, err := hex.DecodeString(strValue); err != nil {
+			err := fmt.Errorf("the value [%s] on field [%s] should be a valid Hexadecimal", strValue, validationData.Name)
+			rtnErrs = append(rtnErrs, err)
+		}
+	}
+
+	return rtnErrs
+}
+
+func (v *Validator) validate_file(context *ValidatorContext, validationData *ValidationData) []error {
+	rtnErrs := make([]error, 0)
+
+	_, _, value := v._getValue(validationData.Value)
+
+	kind := reflect.TypeOf(value).Kind()
+	switch kind {
+	case reflect.String:
+		strValue := fmt.Sprintf("%+v", value)
+		if _, err := os.Stat(strValue); err != nil {
+			err := fmt.Errorf("the value [%s] on field [%s] should be a valid File", strValue, validationData.Name)
+			rtnErrs = append(rtnErrs, err)
+		}
+	}
+
+	return rtnErrs
+}
+
 func (v *Validator) validate_args(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
@@ -1272,13 +1310,21 @@ func (v *Validator) _loadExpectedValue(context *ValidatorContext, expected inter
 
 func (v *Validator) _random(strValue string) string {
 	rand.Seed(time.Now().UnixNano())
-	chars := []rune("abcdefghijklmnopqrstuvwxyz")
+	alphabetChars := []rune("abcdefghijklmnopqrstuvwxyz")
+	alphabetNumbers := []rune("0123456789")
 
 	newValue := []rune(strValue)
 
 	for i, char := range newValue {
 		if !unicode.IsSpace(char) {
-			newValue[i] = chars[rand.Intn(len(chars))]
+			var alphabet []rune
+			if unicode.IsLetter(char) {
+				alphabet = alphabetChars
+			} else if unicode.IsNumber(char) {
+				alphabet = alphabetNumbers
+			}
+
+			newValue[i] = alphabet[rand.Intn(len(alphabet))]
 		}
 	}
 
