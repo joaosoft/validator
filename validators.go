@@ -1085,7 +1085,6 @@ func (v *Validator) validate_uuid(context *ValidatorContext, validationData *Val
 	_, obj, value := v._getValue(validationData.Value)
 
 	var strValue string
-	fmt.Println(obj.Type())
 	switch obj.Type() {
 	case reflect.TypeOf(uuid.UUID{}):
 		check = true
