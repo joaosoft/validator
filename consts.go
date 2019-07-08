@@ -55,4 +55,7 @@ const (
 	ConstTagSetSanitize = "set-sanitize"
 	ConstTagSetMd5      = "set-md5"
 	ConstTagSetRandom   = "set-random"
+
+	ConstAlphanumericAlphabet = "abcdefghijklmnopqrstuvwxyz"
+	ConstNumericAlphabet      = "0123456789"
 )

@@ -1312,8 +1312,8 @@ func (v *Validator) _loadExpectedValue(context *ValidatorContext, expected inter
 
 func (v *Validator) _random(strValue string) string {
 	rand.Seed(time.Now().UnixNano())
-	alphabetChars := []rune("abcdefghijklmnopqrstuvwxyz")
-	alphabetNumbers := []rune("0123456789")
+	alphabetChars := []rune(ConstAlphanumericAlphabet)
+	alphabetNumbers := []rune(ConstNumericAlphabet)
 
 	newValue := []rune(strValue)
 
