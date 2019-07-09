@@ -27,6 +27,8 @@ type Items struct {
 }
 
 type Example struct {
+	Interface               interface{}       `validate:"notnull, notzero"`
+	Interfaces              []interface{}     `validate:"notnull, notzero"`
 	Array                   []string          `validate:"item:size=5"`
 	Array2                  []string          `validate:"item:set-distinct"`
 	Array3                  Items             `validate:"item:size=5"`
@@ -56,38 +58,37 @@ type Example struct {
 	DoubleValidation        int     `validate:"notzero, error=20, min=5, error={ErrorTag21}"`
 	Set                     int     `validate:"set=321, id=set"`
 	NextSet                 NextSet
-	DistinctIntPointer      []*int      `validate:"set-distinct"`
-	DistinctInt             []int       `validate:"set-distinct"`
-	DistinctString          []string    `validate:"set-distinct"`
-	DistinctBool            []bool      `validate:"set-distinct"`
-	DistinctFloat           []float32   `validate:"set-distinct"`
-	IsZero                  int         `validate:"iszero"`
-	Trim                    string      `validate:"set-trim"`
-	Lower                   string      `validate:"set-lower"`
-	Upper                   string      `validate:"set-upper"`
-	Key                     string      `validate:"set-key"`
-	KeyValue                string      `validate:"id=my_value"`
-	KeyFromValue            string      `validate:"set-key={my_value}"`
-	NotMatch1               string      `validate:"id=not_match"`
-	NotMatch2               string      `validate:"not={not_match}"`
-	TypeAlpha               string      `validate:"alpha"`
-	TypeNumeric             string      `validate:"numeric"`
-	TypeBool                string      `validate:"bool"`
-	ShouldBeNull            *string     `validate:"isnull"`
-	ShouldNotBeNull         *string     `validate:"notnull"`
-	FirstMd5                string      `validate:"set-md5"`
-	SecondMd5               string      `validate:"set-md5=ola"`
-	EnableEncodeRandom      bool        `validate:"id=random_enable"`
-	EnableEncodeRandomTitle bool        `validate:"id=random_title_enable"`
-	Random                  string      `cleanup:"if=(id=random_enable value=true), set-random, if=(id=random_title_enable value=true), set-title"`
-	RandomArg               string      `cleanup:"if=(arg=random_enable value=true), set-random, if=(arg=random_title_enable value=true), set-title"`
-	RandomClean             string      `cleanup:"if=(id=random_enable value=true), set-random, if=(id=random_title_enable value=true), set="`
-	Interface               interface{} `validate:"notnull, notzero"`
-	StringPrefix            string      `validate:"prefix=ola"`
-	StringSuffix            string      `validate:"suffix=mundo"`
-	StringContains          string      `validate:"contains=a m"`
-	Hex                     string      `validate:"hex"`
-	File                    string      `validate:"file"`
+	DistinctIntPointer      []*int    `validate:"set-distinct"`
+	DistinctInt             []int     `validate:"set-distinct"`
+	DistinctString          []string  `validate:"set-distinct"`
+	DistinctBool            []bool    `validate:"set-distinct"`
+	DistinctFloat           []float32 `validate:"set-distinct"`
+	IsZero                  int       `validate:"iszero"`
+	Trim                    string    `validate:"set-trim"`
+	Lower                   string    `validate:"set-lower"`
+	Upper                   string    `validate:"set-upper"`
+	Key                     string    `validate:"set-key"`
+	KeyValue                string    `validate:"id=my_value"`
+	KeyFromValue            string    `validate:"set-key={my_value}"`
+	NotMatch1               string    `validate:"id=not_match"`
+	NotMatch2               string    `validate:"not={not_match}"`
+	TypeAlpha               string    `validate:"alpha"`
+	TypeNumeric             string    `validate:"numeric"`
+	TypeBool                string    `validate:"bool"`
+	ShouldBeNull            *string   `validate:"isnull"`
+	ShouldNotBeNull         *string   `validate:"notnull"`
+	FirstMd5                string    `validate:"set-md5"`
+	SecondMd5               string    `validate:"set-md5=ola"`
+	EnableEncodeRandom      bool      `validate:"id=random_enable"`
+	EnableEncodeRandomTitle bool      `validate:"id=random_title_enable"`
+	Random                  string    `cleanup:"if=(id=random_enable value=true), set-random, if=(id=random_title_enable value=true), set-title"`
+	RandomArg               string    `cleanup:"if=(arg=random_enable value=true), set-random, if=(arg=random_title_enable value=true), set-title"`
+	RandomClean             string    `cleanup:"if=(id=random_enable value=true), set-random, if=(id=random_title_enable value=true), set="`
+	StringPrefix            string    `validate:"prefix=ola"`
+	StringSuffix            string    `validate:"suffix=mundo"`
+	StringContains          string    `validate:"contains=a m"`
+	Hex                     string    `validate:"hex"`
+	File                    string    `validate:"file"`
 }
 
 type Example2 struct {
@@ -112,6 +113,11 @@ type Example2 struct {
 	PasswordConfirm string    `validate:"value={password}"`
 	UUID            string    `validate:"uuid"`
 	UUIDStruct      uuid.UUID `validate:"uuid"`
+}
+
+type Example3 struct {
+	Name     string `validate:"value=joao"`
+	LastName string `validate:"set=ribeiro"`
 }
 
 var dummy_middle_handler = func(context *validator.ValidatorContext, validationData *validator.ValidationData) []error {
@@ -193,6 +199,16 @@ func main() {
 	copy(byts[:], "1234567890123456")
 
 	example := Example{
+		Interface: &Example3{
+			Name:     "JESSICA",
+			LastName: "EMPTY",
+		},
+		Interfaces: []interface{}{
+			&Example3{
+				Name:     "JESSICA",
+				LastName: "EMPTY",
+			},
+		},
 		Array:  []string{"12345", "123456", "12345", "1234567"},
 		Array2: []string{"111", "111", "222", "222"},
 		Array3: Items{
@@ -328,4 +344,6 @@ func main() {
 	fmt.Printf("\nRANDOM: %+v", example.Random)
 	fmt.Printf("\nRANDOM BY ARG: %+v", example.RandomArg)
 	fmt.Printf("\nRANDOM BY ARG CLEAN: %+v", example.RandomClean)
+	fmt.Printf("\nLAST NAME: %+v", example.Interface.(*Example3).LastName)
+	fmt.Printf("\nLAST NAME 2: %+v", example.Interfaces[0].(*Example3).LastName)
 }

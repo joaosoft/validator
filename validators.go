@@ -602,7 +602,7 @@ func (v *Validator) validate_if(context *ValidatorContext, validationData *Valid
 
 			if ok {
 				var errs []error
-				err := context.execute(data.typ, data.obj, strings.Split(query, " "), &errs)
+				err := context.execute(data.typ, data.value, strings.Split(query, " "), &errs)
 
 				// get next operator
 				var operator Operator
@@ -786,7 +786,7 @@ func (v *Validator) validate_set(context *ValidatorContext, validationData *Vali
 				value := obj.FieldByName(validationData.Field)
 				kind := reflect.TypeOf(value).Kind()
 
-				setValue(kind, value, newValue.obj.Interface())
+				setValue(kind, value, newValue.value.Interface())
 			} else {
 				err := fmt.Errorf("invalid set tag [%+v] on field [%s]", validationData.Expected, validationData.Name)
 				rtnErrs = append(rtnErrs, err)
@@ -1301,7 +1301,7 @@ func (v *Validator) _loadExpectedValue(context *ValidatorContext, expected inter
 				}
 
 				if ok {
-					return value.obj.Interface(), nil
+					return value.value.Interface(), nil
 				}
 			}
 		}

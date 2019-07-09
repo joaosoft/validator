@@ -77,8 +77,8 @@ type ErrorData struct {
 }
 
 type data struct {
-	obj reflect.Value
-	typ reflect.StructField
+	value reflect.Value
+	typ   reflect.StructField
 }
 
 type expression struct {

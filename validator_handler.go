@@ -22,7 +22,7 @@ func NewValidatorHandler(validator *Validator, args ...*Argument) *ValidatorCont
 
 	for _, arg := range args {
 		context.values[ConstTagArg][arg.Id] = &data{
-			obj: reflect.ValueOf(arg.Value),
+			value: reflect.ValueOf(arg.Value),
 			typ: reflect.StructField{
 				Type: reflect.TypeOf(arg.Value),
 			},
@@ -71,11 +71,12 @@ func (v *ValidatorContext) handleValidation(value interface{}) []error {
 func (v *ValidatorContext) load(value reflect.Value, errs *[]error) error {
 	types := reflect.TypeOf(value.Interface())
 
-	if value.Kind() == reflect.Ptr && !value.IsNil() {
+again:
+	if (value.Kind() == reflect.Ptr || value.Kind() == reflect.Interface) && !value.IsNil() {
 		value = value.Elem()
-
 		if value.IsValid() {
 			types = value.Type()
+			goto again
 		} else {
 			return nil
 		}
@@ -109,8 +110,8 @@ func (v *ValidatorContext) load(value reflect.Value, errs *[]error) error {
 						id = tag[1]
 						if dat == nil {
 							dat = &data{
-								obj: nextValue,
-								typ: nextType,
+								value: nextValue,
+								typ:   nextType,
 							}
 						}
 					case ConstTagSet:
@@ -124,8 +125,8 @@ func (v *ValidatorContext) load(value reflect.Value, errs *[]error) error {
 						}
 
 						dat = &data{
-							obj: newField,
-							typ: nextType,
+							value: newField,
+							typ:   nextType,
 						}
 					}
 				}
@@ -137,8 +138,8 @@ func (v *ValidatorContext) load(value reflect.Value, errs *[]error) error {
 			if exists && tagValue != "-" {
 				split := strings.Split(tagValue, ",")
 				dat = &data{
-					obj: nextValue,
-					typ: nextType,
+					value: nextValue,
+					typ:   nextType,
 				}
 				v.SetValue(ConstTagJson, split[0], dat)
 			}
@@ -186,11 +187,12 @@ func (v *ValidatorContext) load(value reflect.Value, errs *[]error) error {
 func (v *ValidatorContext) do(value reflect.Value, errs *[]error) error {
 	types := reflect.TypeOf(value.Interface())
 
-	if value.Kind() == reflect.Ptr && !value.IsNil() {
+again:
+	if (value.Kind() == reflect.Ptr || value.Kind() == reflect.Interface) && !value.IsNil() {
 		value = value.Elem()
-
 		if value.IsValid() {
 			types = value.Type()
+			goto again
 		} else {
 			return nil
 		}
@@ -349,11 +351,12 @@ func (v *ValidatorContext) execute(typ reflect.StructField, value reflect.Value,
 				return nil
 			}
 
-			if value.Kind() == reflect.Ptr && !value.IsNil() {
+		again:
+			if (value.Kind() == reflect.Ptr || value.Kind() == reflect.Interface) && !value.IsNil() {
 				value = value.Elem()
-
 				if value.IsValid() {
 					types = value.Type()
+					goto again
 				} else {
 					return nil
 				}
