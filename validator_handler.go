@@ -71,10 +71,6 @@ func (v *ValidatorContext) handleValidation(value interface{}) []error {
 func (v *ValidatorContext) load(value reflect.Value, errs *[]error) error {
 	types := reflect.TypeOf(value.Interface())
 
-	if !value.CanInterface() {
-		return nil
-	}
-
 	if value.Kind() == reflect.Ptr && !value.IsNil() {
 		value = value.Elem()
 
@@ -189,10 +185,6 @@ func (v *ValidatorContext) load(value reflect.Value, errs *[]error) error {
 
 func (v *ValidatorContext) do(value reflect.Value, errs *[]error) error {
 	types := reflect.TypeOf(value.Interface())
-
-	if !value.CanInterface() {
-		return nil
-	}
 
 	if value.Kind() == reflect.Ptr && !value.IsNil() {
 		value = value.Elem()
