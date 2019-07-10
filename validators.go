@@ -1312,7 +1312,8 @@ func (v *Validator) _loadExpectedValue(context *ValidatorContext, expected inter
 
 func (v *Validator) _random(strValue string) string {
 	rand.Seed(time.Now().UnixNano())
-	alphabetChars := []rune(ConstAlphanumericAlphabet)
+	alphabetLowerChars := []rune(ConstAlphanumericLowerAlphabet)
+	alphabetUpperChars := []rune(ConstAlphanumericUpperAlphabet)
 	alphabetNumbers := []rune(ConstNumericAlphabet)
 
 	newValue := []rune(strValue)
@@ -1321,7 +1322,11 @@ func (v *Validator) _random(strValue string) string {
 		if !unicode.IsSpace(char) {
 			var alphabet []rune
 			if unicode.IsLetter(char) {
-				alphabet = alphabetChars
+				if unicode.IsUpper(char) {
+					alphabet = alphabetUpperChars
+				} else {
+					alphabet = alphabetLowerChars
+				}
 			} else if unicode.IsNumber(char) {
 				alphabet = alphabetNumbers
 			}
