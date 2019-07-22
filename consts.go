@@ -56,7 +56,8 @@ const (
 	ConstTagSetMd5      = "set-md5"
 	ConstTagSetRandom   = "set-random"
 
-	ConstAlphanumericLowerAlphabet = "abcdefghijklmnopqrstuvwxyz"
-	ConstAlphanumericUpperAlphabet = "ABCDEFGHUJKLMNOPQRSTUVWXYZ"
+	ConstAlphanumericLowerAlphabet = "abcdefghijklmnopqrstuvwxyzáéíóúãõâôàèìòù"
+	ConstAlphanumericUpperAlphabet = "ABCDEFGHUJKLMNOPQRSTUVWXYZÁÉÍÓÚÃÕÂÔÀÈÌÒÙ"
 	ConstNumericAlphabet           = "0123456789"
+	ConstSpecialAlphabet           = "-+*/!.|%&$#\\<>,;:_=()§± "
 )

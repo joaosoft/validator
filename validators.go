@@ -1315,6 +1315,7 @@ func (v *Validator) _random(strValue string) string {
 	alphabetLowerChars := []rune(ConstAlphanumericLowerAlphabet)
 	alphabetUpperChars := []rune(ConstAlphanumericUpperAlphabet)
 	alphabetNumbers := []rune(ConstNumericAlphabet)
+	alphabetSpecial := []rune(ConstSpecialAlphabet)
 
 	newValue := []rune(strValue)
 
@@ -1329,6 +1330,8 @@ func (v *Validator) _random(strValue string) string {
 				}
 			} else if unicode.IsNumber(char) {
 				alphabet = alphabetNumbers
+			} else {
+				alphabet = alphabetSpecial
 			}
 
 			newValue[i] = alphabet[rand.Intn(len(alphabet))]
