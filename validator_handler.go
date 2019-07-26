@@ -298,9 +298,14 @@ func (v *ValidatorContext) getFieldId(validations []string) string {
 
 func (v *ValidatorContext) execute(typ reflect.StructField, value reflect.Value, validations []string, errs *[]error) error {
 	var err error
+	var itErrs []error
 	var replacedErrors = make(map[error]bool)
 	skipValidation := false
 	onlyHandleNextErrorTag := false
+
+	defer func(){
+		*errs = append(*errs, itErrs...)
+	}()
 
 	baseData := &BaseData{
 		Id:        v.getFieldId(validations),
@@ -308,7 +313,6 @@ func (v *ValidatorContext) execute(typ reflect.StructField, value reflect.Value,
 	}
 
 	for _, validation := range validations {
-		var itErrs []error
 		var name string
 		var tag string
 		var prefix string
@@ -390,7 +394,7 @@ func (v *ValidatorContext) execute(typ reflect.StructField, value reflect.Value,
 						Parent:         value,
 						Value:          nextValue,
 						Expected:       expected,
-						Errors:         errs,
+						Errors:         &itErrs,
 						ErrorsReplaced: replacedErrors,
 					}
 
@@ -419,7 +423,7 @@ func (v *ValidatorContext) execute(typ reflect.StructField, value reflect.Value,
 						Parent:         value,
 						Value:          nextValue,
 						Expected:       expected,
-						Errors:         errs,
+						Errors:         &itErrs,
 						ErrorsReplaced: replacedErrors,
 					}
 
@@ -440,7 +444,7 @@ func (v *ValidatorContext) execute(typ reflect.StructField, value reflect.Value,
 						Parent:         value,
 						Value:          nextValue,
 						Expected:       expected,
-						Errors:         errs,
+						Errors:         &itErrs,
 						ErrorsReplaced: replacedErrors,
 					}
 
@@ -460,14 +464,12 @@ func (v *ValidatorContext) execute(typ reflect.StructField, value reflect.Value,
 				Parent:         value,
 				Value:          value,
 				Expected:       expected,
-				Errors:         errs,
+				Errors:         &itErrs,
 				ErrorsReplaced: replacedErrors,
 			}
 
 			err = v.executeHandlers(tag, &validationData, &itErrs)
 		}
-
-		*errs = append(*errs, itErrs...)
 
 		if onlyHandleNextErrorTag && !v.validator.validateAll && tag == ConstTagError {
 			if err == ErrorSkipValidation {
