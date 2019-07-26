@@ -55,13 +55,12 @@ func (v *ValidatorContext) handleValidation(value interface{}) []error {
 
 	// load id's
 	if err = v.load(reflect.ValueOf(value), &errs); err != nil {
-		errs = append(errs, err)
-		return errs
+		return []error{err}
 	}
 
 	// execute
 	if err = v.do(reflect.ValueOf(value), &errs); err != nil {
-		return errs
+		return []error{err}
 	}
 
 	return errs
@@ -474,7 +473,7 @@ func (v *ValidatorContext) execute(typ reflect.StructField, value reflect.Value,
 				continue
 			}
 
-			return err
+			return nil
 		}
 
 		if err != nil {
@@ -510,21 +509,18 @@ func (v *ValidatorContext) executeHandlers(tag string, validationData *Validatio
 				return rtnErrs[0]
 			}
 			*errs = append(*errs, rtnErrs...)
-			err = rtnErrs[0]
 		}
 	}
 
 	if _, ok := v.validator.handlersMiddle[tag]; ok {
 		if rtnErrs := v.validator.handlersMiddle[tag](v, validationData); rtnErrs != nil && len(rtnErrs) > 0 {
 			*errs = append(*errs, rtnErrs...)
-			err = rtnErrs[0]
 		}
 	}
 
 	if _, ok := v.validator.handlersAfter[tag]; ok {
 		if rtnErrs := v.validator.handlersAfter[tag](v, validationData); rtnErrs != nil && len(rtnErrs) > 0 {
 			*errs = append(*errs, rtnErrs...)
-			err = rtnErrs[0]
 		}
 	}
 
