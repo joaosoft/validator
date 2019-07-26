@@ -211,7 +211,7 @@ again:
 			if err := v.doValidate(nextValue, nextType, errs); err != nil {
 
 				if !v.validator.validateAll {
-					return nil
+					return err
 				}
 			}
 
