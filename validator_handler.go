@@ -61,7 +61,6 @@ func (v *ValidatorContext) handleValidation(value interface{}) []error {
 
 	// execute
 	if err = v.do(reflect.ValueOf(value), &errs); err != nil {
-		errs = append(errs, err)
 		return errs
 	}
 
@@ -293,6 +292,7 @@ func (v *ValidatorContext) execute(typ reflect.StructField, value reflect.Value,
 	var itErrs []error
 	var replacedErrors = make(map[error]bool)
 	skipValidation := false
+	onlyHandleNextErrorTag := false
 
 	baseData := &BaseData{
 		Id:        v.getFieldId(validations),
@@ -310,6 +310,10 @@ func (v *ValidatorContext) execute(typ reflect.StructField, value reflect.Value,
 		if split := strings.SplitN(tag, ":", 2); len(split) > 1 {
 			prefix = split[0]
 			tag = split[1]
+		}
+
+		if onlyHandleNextErrorTag && !v.validator.validateAll && tag != ConstTagError {
+			continue
 		}
 
 		if _, ok := v.validator.activeHandlers[tag]; !ok {
@@ -464,9 +468,23 @@ func (v *ValidatorContext) execute(typ reflect.StructField, value reflect.Value,
 			err = v.executeHandlers(tag, &validationData, &itErrs)
 		}
 
+		if onlyHandleNextErrorTag && !v.validator.validateAll && tag == ConstTagError {
+			if err == ErrorSkipValidation {
+				skipValidation = true
+				continue
+			}
+
+			return err
+		}
+
 		if err != nil {
 			if err == ErrorSkipValidation {
 				skipValidation = true
+				continue
+			}
+
+			if !onlyHandleNextErrorTag && !v.validator.validateAll && tag != ConstTagError {
+				onlyHandleNextErrorTag = true
 				continue
 			}
 
