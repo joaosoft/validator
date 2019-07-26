@@ -12,6 +12,10 @@ func AddAfter(name string, handler afterTagHandler) *Validator {
 	return validatorInstance.AddAfter(name, handler)
 }
 
+func SetErrorCodeHandler(handler errorCodeHandler) *Validator {
+	return validatorInstance.SetErrorCodeHandler(handler)
+}
+
 func SetValidateAll(validate bool) *Validator {
 	return validatorInstance.SetValidateAll(validate)
 }
@@ -24,7 +28,10 @@ func SetSanitize(sanitize []string) *Validator {
 	return validatorInstance.SetSanitize(sanitize)
 }
 
-// Validate ...
+func AddCallback(name string, callback callbackHandler) *Validator {
+	return validatorInstance.AddCallback(name, callback)
+}
+
 func Validate(obj interface{}, args ...*Argument) []error {
-	return validatorInstance.Validate(obj, args...)
+	return NewValidatorHandler(validatorInstance, args...).handleValidation(obj)
 }

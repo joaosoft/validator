@@ -93,7 +93,6 @@ func (v *Validator) AddCallback(name string, callback callbackHandler) *Validato
 	return v
 }
 
-// MyValidate ...
 func (v *Validator) Validate(obj interface{}, args ...*Argument) []error {
 	return NewValidatorHandler(v, args...).handleValidation(obj)
 }

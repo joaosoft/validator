@@ -207,16 +207,19 @@ again:
 			}
 
 			if err := v.doValidate(nextValue, nextType, errs); err != nil {
+				return err
+			}
 
-				if !v.validator.validateAll {
-					return err
-				}
+			if len(*errs) > 0 && !v.validator.validateAll {
+				return nil
 			}
 
 			if err := v.do(nextValue, errs); err != nil {
-				if !v.validator.validateAll {
-					return err
-				}
+				return err
+			}
+
+			if len(*errs) > 0 && !v.validator.validateAll {
+				return nil
 			}
 		}
 
@@ -229,9 +232,11 @@ again:
 			}
 
 			if err := v.do(nextValue, errs); err != nil {
-				if !v.validator.validateAll {
-					return err
-				}
+				return err
+			}
+
+			if len(*errs) > 0 && !v.validator.validateAll {
+				return nil
 			}
 		}
 
@@ -244,14 +249,19 @@ again:
 			}
 
 			if err := v.do(key, errs); err != nil {
-				if !v.validator.validateAll {
-					return err
-				}
+				return err
 			}
+
+			if len(*errs) > 0 && !v.validator.validateAll {
+				return nil
+			}
+
 			if err := v.do(nextValue, errs); err != nil {
-				if !v.validator.validateAll {
-					return err
-				}
+				return err
+			}
+
+			if len(*errs) > 0 && !v.validator.validateAll {
+				return nil
 			}
 		}
 
@@ -288,7 +298,6 @@ func (v *ValidatorContext) getFieldId(validations []string) string {
 
 func (v *ValidatorContext) execute(typ reflect.StructField, value reflect.Value, validations []string, errs *[]error) error {
 	var err error
-	var itErrs []error
 	var replacedErrors = make(map[error]bool)
 	skipValidation := false
 	onlyHandleNextErrorTag := false
@@ -299,6 +308,7 @@ func (v *ValidatorContext) execute(typ reflect.StructField, value reflect.Value,
 	}
 
 	for _, validation := range validations {
+		var itErrs []error
 		var name string
 		var tag string
 		var prefix string
@@ -316,12 +326,7 @@ func (v *ValidatorContext) execute(typ reflect.StructField, value reflect.Value,
 		}
 
 		if _, ok := v.validator.activeHandlers[tag]; !ok {
-			err := fmt.Errorf("invalid tag [%s]", tag)
-			*errs = append(*errs, err)
-
-			if !v.validator.validateAll {
-				return err
-			}
+			return fmt.Errorf("invalid tag [%s]", tag)
 		}
 
 		var expected interface{}
@@ -385,7 +390,7 @@ func (v *ValidatorContext) execute(typ reflect.StructField, value reflect.Value,
 						Parent:         value,
 						Value:          nextValue,
 						Expected:       expected,
-						Errors:         &itErrs,
+						Errors:         errs,
 						ErrorsReplaced: replacedErrors,
 					}
 
@@ -414,7 +419,7 @@ func (v *ValidatorContext) execute(typ reflect.StructField, value reflect.Value,
 						Parent:         value,
 						Value:          nextValue,
 						Expected:       expected,
-						Errors:         &itErrs,
+						Errors:         errs,
 						ErrorsReplaced: replacedErrors,
 					}
 
@@ -435,7 +440,7 @@ func (v *ValidatorContext) execute(typ reflect.StructField, value reflect.Value,
 						Parent:         value,
 						Value:          nextValue,
 						Expected:       expected,
-						Errors:         &itErrs,
+						Errors:         errs,
 						ErrorsReplaced: replacedErrors,
 					}
 
@@ -445,12 +450,7 @@ func (v *ValidatorContext) execute(typ reflect.StructField, value reflect.Value,
 
 		default:
 			if prefix != "" {
-				err := fmt.Errorf("invalid tag prefix [%s] on tag [%s]", prefix, tag)
-				itErrs = append(itErrs, err)
-
-				if !v.validator.validateAll {
-					return err
-				}
+				return fmt.Errorf("invalid tag prefix [%s] on tag [%s]", prefix, tag)
 			}
 
 			validationData := ValidationData{
@@ -460,12 +460,14 @@ func (v *ValidatorContext) execute(typ reflect.StructField, value reflect.Value,
 				Parent:         value,
 				Value:          value,
 				Expected:       expected,
-				Errors:         &itErrs,
+				Errors:         errs,
 				ErrorsReplaced: replacedErrors,
 			}
 
 			err = v.executeHandlers(tag, &validationData, &itErrs)
 		}
+
+		*errs = append(*errs, itErrs...)
 
 		if onlyHandleNextErrorTag && !v.validator.validateAll && tag == ConstTagError {
 			if err == ErrorSkipValidation {
@@ -480,22 +482,24 @@ func (v *ValidatorContext) execute(typ reflect.StructField, value reflect.Value,
 			if err == ErrorSkipValidation {
 				skipValidation = true
 				continue
+			} else {
+				return err
 			}
+		}
 
+		if len(*errs) > 0 {
 			if !onlyHandleNextErrorTag && !v.validator.validateAll && tag != ConstTagError {
 				onlyHandleNextErrorTag = true
 				continue
 			}
 
 			if !v.validator.validateAll {
-				return err
+				return nil
 			}
 		}
 	}
 
-	*errs = append(*errs, itErrs...)
-
-	return err
+	return nil
 }
 
 func (v *ValidatorContext) executeHandlers(tag string, validationData *ValidationData, errs *[]error) error {
