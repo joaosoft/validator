@@ -338,7 +338,7 @@ func (v *ValidatorContext) execute(typ reflect.StructField, value reflect.Value,
 			expected = strings.TrimSpace(options[1])
 		}
 
-		jsonName, exists := typ.Tag.Lookup("json")
+		jsonName, exists := typ.Tag.Lookup(ConstTagJson)
 		if exists {
 			split := strings.SplitN(jsonName, ",", 2)
 			name = split[0]
