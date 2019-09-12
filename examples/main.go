@@ -8,7 +8,7 @@ import (
 
 	"regexp"
 
-	"github.com/satori/go.uuid"
+	uuid "github.com/satori/go.uuid"
 )
 
 const (
@@ -346,4 +346,20 @@ func main() {
 	fmt.Printf("\nRANDOM BY ARG CLEAN: %+v", example.RandomClean)
 	fmt.Printf("\nLAST NAME: %+v", example.Interface.(*Example3).LastName)
 	fmt.Printf("\nLAST NAME 2: %+v", example.Interfaces[0].(*Example3).LastName)
+
+	// validate embed struct
+	if errs := validator.Validate(struct {
+		Data struct {
+			Name  string `validate:"notnull, notzero"`
+			Array []int  `validate:"notnull, notzero"`
+		} `validate:"notnull, notzero"`
+	}{},
+		validator.NewArgument("random_enable", false),
+		validator.NewArgument("random_title_enable", true),
+	); len(errs) > 0 {
+		fmt.Printf("\n\nERRORS: %d\n", len(errs))
+		for _, err := range errs {
+			fmt.Printf("\nERROR: %s", err)
+		}
+	}
 }

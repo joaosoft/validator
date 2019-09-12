@@ -19,7 +19,7 @@ import (
 
 	"errors"
 
-	"github.com/satori/go.uuid"
+	uuid "github.com/satori/go.uuid"
 )
 
 func (v *Validator) validate_value(context *ValidatorContext, validationData *ValidationData) []error {
@@ -394,6 +394,7 @@ func (v *Validator) validate_iszero(context *ValidatorContext, validationData *V
 	var isZero bool
 
 	isNil, obj, value := v._getValue(validationData.Value)
+
 	switch obj.Kind() {
 	case reflect.Array, reflect.Slice, reflect.Map:
 
@@ -415,7 +416,7 @@ func (v *Validator) validate_iszero(context *ValidatorContext, validationData *V
 	case reflect.Bool:
 		isZero = obj.Bool() == false
 	case reflect.Struct:
-		if value == reflect.Zero(obj.Type()).Interface() {
+		if value != reflect.New(obj.Type()).Interface() {
 			isZero = true
 		}
 	default:
