@@ -350,7 +350,7 @@ func main() {
 	// validate embed struct
 	if errs := validator.Validate(struct {
 		Data struct {
-			Name  string `validate:"notnull, notzero"`
+			Name  string `validate:"notnull, iszero"`
 			Array []int  `validate:"notnull, notzero"`
 		} `validate:"notnull, notzero"`
 	}{},
