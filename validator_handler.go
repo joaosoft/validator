@@ -53,11 +53,6 @@ func (v *ValidatorContext) handleValidation(value interface{}) []error {
 	var err error
 	errs := make([]error, 0)
 
-	// load id's
-	if err = v.load(reflect.ValueOf(value), &errs); err != nil {
-		return []error{err}
-	}
-
 	// execute
 	if err = v.do(reflect.ValueOf(value), &errs); err != nil {
 		return []error{err}
@@ -198,6 +193,12 @@ again:
 
 	switch value.Kind() {
 	case reflect.Struct:
+
+		// load id's
+		if err := v.load(reflect.ValueOf(value), errs); err != nil {
+			return err
+		}
+
 		for i := 0; i < types.NumField(); i++ {
 			nextValue := value.Field(i)
 			nextType := types.Field(i)
@@ -303,7 +304,7 @@ func (v *ValidatorContext) execute(typ reflect.StructField, value reflect.Value,
 	skipValidation := false
 	onlyHandleNextErrorTag := false
 
-	defer func(){
+	defer func() {
 		*errs = append(*errs, itErrs...)
 	}()
 
