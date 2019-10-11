@@ -42,6 +42,7 @@ type Example struct {
 	Option2                 int               `validate:"options=11;22;33, error={ErrorTag7}"`
 	Option3                 []string          `validate:"options=aa;bb;cc, error={ErrorTag8}"`
 	Option4                 []int             `validate:"options=11;22;33, error={ErrorTag9}"`
+	NotOption               []int             `validate:"notoptions=11;22;33"`
 	Map1                    map[string]int    `validate:"options=aa:11;bb:22;cc:33, error={ErrorTag10}"`
 	Map2                    map[int]string    `validate:"options=11:aa;22:bb;33:cc, error={ErrorTag11}"`
 	Url                     string            `validate:"url"`
@@ -100,6 +101,7 @@ type Example2 struct {
 	Option2         int            `validate:"options=11;22;33, error={ErrorTag7}"`
 	Option3         []string       `validate:"options=aa;bb;cc, error={ErrorTag8}"`
 	Option4         []int          `validate:"options=11;22;33, error={ErrorTag9}"`
+	NotOption       []int          `validate:"notoptions=11;22;33"`
 	Map1            map[string]int `validate:"options=aa:11;bb:22;cc:33, error={ErrorTag10}"`
 	Map2            map[int]string `validate:"options=11:aa;22:bb;33:cc, error={ErrorTag11}"`
 	Url             string         `validate:"url"`
@@ -224,6 +226,7 @@ func main() {
 		Option2:          11,
 		Option3:          []string{"aa", "bb", "cc"},
 		Option4:          []int{11, 22, 33},
+		NotOption:        []int{1, 2, 3},
 		Map1:             map[string]int{"aa": 11, "bb": 22, "cc": 33},
 		Map2:             map[int]string{11: "aa", 22: "bb", 33: "cc"},
 		Url:              "google.com",
@@ -275,6 +278,7 @@ func main() {
 				Option2:         99,
 				Option3:         []string{"aa", "zz", "cc"},
 				Option4:         []int{11, 44, 33},
+				NotOption:       []int{11, 22, 33},
 				Map1:            map[string]int{"aa": 11, "kk": 22, "cc": 33},
 				Map2:            map[int]string{11: "aa", 22: "bb", 99: "cc"},
 				Sanitize:        "b teste",
