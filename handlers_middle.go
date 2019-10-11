@@ -5,6 +5,7 @@ func (v *Validator) newDefaultMiddleHandlers() map[string]middleTagHandler {
 		ConstTagValue:       v.validate_value,
 		ConstTagNot:         v.validate_not,
 		ConstTagOptions:     v.validate_options,
+		ConstTagNotOptions:  v.validate_notoptions,
 		ConstTagSize:        v.validate_size,
 		ConstTagMin:         v.validate_min,
 		ConstTagMax:         v.validate_max,

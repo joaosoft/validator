@@ -12,6 +12,7 @@ A simple struct validator by tags (exported fields only).
 * value (equal to)
 * not (not equal to)
 * options (one of the options)
+* notoptions (none of the options)
 * size (size equal to)
 * min 
 * max 

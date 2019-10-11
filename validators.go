@@ -219,6 +219,15 @@ func (v *Validator) validate_options(context *ValidatorContext, validationData *
 	return rtnErrs
 }
 
+func (v *Validator) validate_notoptions(context *ValidatorContext, validationData *ValidationData) []error {
+	rtnErrs := make([]error, 0)
+	if errs := v.validate_options(context, validationData); len(errs) == 0 {
+		err := fmt.Errorf("the value [%+v] is equal to the excluded options [%+v] on field [%s]", validationData.Value.Interface(), validationData.Expected, validationData.Name)
+		rtnErrs = append(rtnErrs, err)
+	}
+	return rtnErrs
+}
+
 func (v *Validator) validate_size(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
