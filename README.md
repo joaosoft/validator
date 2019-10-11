@@ -101,6 +101,8 @@ type Items struct {
 }
 
 type Example struct {
+	Interface               interface{}       `validate:"notnull, notzero"`
+	Interfaces              []interface{}     `validate:"notnull, notzero"`
 	Array                   []string          `validate:"item:size=5"`
 	Array2                  []string          `validate:"item:set-distinct"`
 	Array3                  Items             `validate:"item:size=5"`
@@ -114,6 +116,7 @@ type Example struct {
 	Option2                 int               `validate:"options=11;22;33, error={ErrorTag7}"`
 	Option3                 []string          `validate:"options=aa;bb;cc, error={ErrorTag8}"`
 	Option4                 []int             `validate:"options=11;22;33, error={ErrorTag9}"`
+	NotOption               []int             `validate:"notoptions=11;22;33"`
 	Map1                    map[string]int    `validate:"options=aa:11;bb:22;cc:33, error={ErrorTag10}"`
 	Map2                    map[int]string    `validate:"options=11:aa;22:bb;33:cc, error={ErrorTag11}"`
 	Url                     string            `validate:"url"`
@@ -130,38 +133,37 @@ type Example struct {
 	DoubleValidation        int     `validate:"notzero, error=20, min=5, error={ErrorTag21}"`
 	Set                     int     `validate:"set=321, id=set"`
 	NextSet                 NextSet
-	DistinctIntPointer      []*int      `validate:"set-distinct"`
-	DistinctInt             []int       `validate:"set-distinct"`
-	DistinctString          []string    `validate:"set-distinct"`
-	DistinctBool            []bool      `validate:"set-distinct"`
-	DistinctFloat           []float32   `validate:"set-distinct"`
-	IsZero                  int         `validate:"iszero"`
-	Trim                    string      `validate:"set-trim"`
-	Lower                   string      `validate:"set-lower"`
-	Upper                   string      `validate:"set-upper"`
-	Key                     string      `validate:"set-key"`
-	KeyValue                string      `validate:"id=my_value"`
-	KeyFromValue            string      `validate:"set-key={my_value}"`
-	NotMatch1               string      `validate:"id=not_match"`
-	NotMatch2               string      `validate:"not={not_match}"`
-	TypeAlpha               string      `validate:"alpha"`
-	TypeNumeric             string      `validate:"numeric"`
-	TypeBool                string      `validate:"bool"`
-	ShouldBeNull            *string     `validate:"isnull"`
-	ShouldNotBeNull         *string     `validate:"notnull"`
-	FirstMd5                string      `validate:"set-md5"`
-	SecondMd5               string      `validate:"set-md5=ola"`
-	EnableEncodeRandom      bool        `validate:"id=random_enable"`
-	EnableEncodeRandomTitle bool        `validate:"id=random_title_enable"`
-	Random                  string      `cleanup:"if=(id=random_enable value=true), set-random, if=(id=random_title_enable value=true), set-title"`
-	RandomArg               string      `cleanup:"if=(arg=random_enable value=true), set-random, if=(arg=random_title_enable value=true), set-title"`
-	RandomClean             string      `cleanup:"if=(id=random_enable value=true), set-random, if=(id=random_title_enable value=true), set="`
-	Interface               interface{} `validate:"notnull, notzero"`
-	StringPrefix            string      `validate:"prefix=ola"`
-	StringSuffix            string      `validate:"suffix=mundo"`
-	StringContains          string      `validate:"contains=a m"`
-	Hex                     string      `validate:"hex"`
-	File                    string      `validate:"file"`
+	DistinctIntPointer      []*int    `validate:"set-distinct"`
+	DistinctInt             []int     `validate:"set-distinct"`
+	DistinctString          []string  `validate:"set-distinct"`
+	DistinctBool            []bool    `validate:"set-distinct"`
+	DistinctFloat           []float32 `validate:"set-distinct"`
+	IsZero                  int       `validate:"iszero"`
+	Trim                    string    `validate:"set-trim"`
+	Lower                   string    `validate:"set-lower"`
+	Upper                   string    `validate:"set-upper"`
+	Key                     string    `validate:"set-key"`
+	KeyValue                string    `validate:"id=my_value"`
+	KeyFromValue            string    `validate:"set-key={my_value}"`
+	NotMatch1               string    `validate:"id=not_match"`
+	NotMatch2               string    `validate:"not={not_match}"`
+	TypeAlpha               string    `validate:"alpha"`
+	TypeNumeric             string    `validate:"numeric"`
+	TypeBool                string    `validate:"bool"`
+	ShouldBeNull            *string   `validate:"isnull"`
+	ShouldNotBeNull         *string   `validate:"notnull"`
+	FirstMd5                string    `validate:"set-md5"`
+	SecondMd5               string    `validate:"set-md5=ola"`
+	EnableEncodeRandom      bool      `validate:"id=random_enable"`
+	EnableEncodeRandomTitle bool      `validate:"id=random_title_enable"`
+	Random                  string    `cleanup:"if=(id=random_enable value=true), set-random, if=(id=random_title_enable value=true), set-title"`
+	RandomArg               string    `cleanup:"if=(arg=random_enable value=true), set-random, if=(arg=random_title_enable value=true), set-title"`
+	RandomClean             string    `cleanup:"if=(id=random_enable value=true), set-random, if=(id=random_title_enable value=true), set="`
+	StringPrefix            string    `validate:"prefix=ola"`
+	StringSuffix            string    `validate:"suffix=mundo"`
+	StringContains          string    `validate:"contains=a m"`
+	Hex                     string    `validate:"hex"`
+	File                    string    `validate:"file"`
 }
 
 type Example2 struct {
@@ -173,6 +175,7 @@ type Example2 struct {
 	Option2         int            `validate:"options=11;22;33, error={ErrorTag7}"`
 	Option3         []string       `validate:"options=aa;bb;cc, error={ErrorTag8}"`
 	Option4         []int          `validate:"options=11;22;33, error={ErrorTag9}"`
+	NotOption       []int          `validate:"notoptions=11;22;33"`
 	Map1            map[string]int `validate:"options=aa:11;bb:22;cc:33, error={ErrorTag10}"`
 	Map2            map[int]string `validate:"options=11:aa;22:bb;33:cc, error={ErrorTag11}"`
 	Url             string         `validate:"url"`
@@ -186,6 +189,11 @@ type Example2 struct {
 	PasswordConfirm string    `validate:"value={password}"`
 	UUID            string    `validate:"uuid"`
 	UUIDStruct      uuid.UUID `validate:"uuid"`
+}
+
+type Example3 struct {
+	Name     string `validate:"value=joao"`
+	LastName string `validate:"set=ribeiro"`
 }
 
 var dummy_middle_handler = func(context *validator.ValidatorContext, validationData *validator.ValidationData) []error {
@@ -267,6 +275,16 @@ func main() {
 	copy(byts[:], "1234567890123456")
 
 	example := Example{
+		Interface: &Example3{
+			Name:     "JESSICA",
+			LastName: "EMPTY",
+		},
+		Interfaces: []interface{}{
+			&Example3{
+				Name:     "JESSICA",
+				LastName: "EMPTY",
+			},
+		},
 		Array:  []string{"12345", "123456", "12345", "1234567"},
 		Array2: []string{"111", "111", "222", "222"},
 		Array3: Items{
@@ -282,6 +300,7 @@ func main() {
 		Option2:          11,
 		Option3:          []string{"aa", "bb", "cc"},
 		Option4:          []int{11, 22, 33},
+		NotOption:        []int{1, 2, 3},
 		Map1:             map[string]int{"aa": 11, "bb": 22, "cc": 33},
 		Map2:             map[int]string{11: "aa", 22: "bb", 33: "cc"},
 		Url:              "google.com",
@@ -333,6 +352,7 @@ func main() {
 				Option2:         99,
 				Option3:         []string{"aa", "zz", "cc"},
 				Option4:         []int{11, 44, 33},
+				NotOption:       []int{11, 22, 33},
 				Map1:            map[string]int{"aa": 11, "kk": 22, "cc": 33},
 				Map2:            map[int]string{11: "aa", 22: "bb", 99: "cc"},
 				Sanitize:        "b teste",
@@ -402,6 +422,24 @@ func main() {
 	fmt.Printf("\nRANDOM: %+v", example.Random)
 	fmt.Printf("\nRANDOM BY ARG: %+v", example.RandomArg)
 	fmt.Printf("\nRANDOM BY ARG CLEAN: %+v", example.RandomClean)
+	fmt.Printf("\nLAST NAME: %+v", example.Interface.(*Example3).LastName)
+	fmt.Printf("\nLAST NAME 2: %+v", example.Interfaces[0].(*Example3).LastName)
+
+	// validate embed struct
+	if errs := validator.Validate(struct {
+		Data struct {
+			Name  string `validate:"notnull, iszero"`
+			Array []int  `validate:"notnull, notzero"`
+		} `validate:"notnull, notzero"`
+	}{},
+		validator.NewArgument("random_enable", false),
+		validator.NewArgument("random_title_enable", true),
+	); len(errs) > 0 {
+		fmt.Printf("\n\nERRORS: %d\n", len(errs))
+		for _, err := range errs {
+			fmt.Printf("\nERROR: %s", err)
+		}
+	}
 }
 ```
 
@@ -414,20 +452,21 @@ BEFORE KEY:      AQUI       TEM     ESPACOS    !!
 BEFORE FROM KEY: 
 BEFORE UPPER:      aqui       TEM     espaços    !!   
 BEFORE LOWER:      AQUI       TEM     ESPACOS    !!   
-BEFORE DISTINCT INT POINTER: [0xc0000202f8 0xc0000202f8 0xc000020310 0xc000020310]
+BEFORE DISTINCT INT POINTER: [0xc0000a42a8 0xc0000a42a8 0xc0000a42c0 0xc0000a42c0]
 BEFORE DISTINCT INT: [1 1 2 2]
 BEFORE DISTINCT STRING: [a a b b]
 BEFORE DISTINCT BOOL: [true true false false]
-BEFORE DISTINCT FLOAT: [1.1 1.1 1.2 1.2]
-BEFORE DISTINCT ARRAY2: [111 111 222 222]
-there are the following arguments [a b c]!
 
-ERRORS: 36
 
-ERROR: the length [6] is lower then the expected [5] on field [Array] value [123456]
-ERROR: the length [7] is lower then the expected [5] on field [Array] value [1234567]
-ERROR: the length [6] is lower then the expected [5] on field [Array3] value [123456]
-ERROR: the length [7] is lower then the expected [5] on field [Array3] value [1234567]
+
+
+
+
+
+
+
+
+
 ERROR: the length [7] is lower then the expected [5] on field [Map4] value [1234567]
 ERROR: the length [6] is lower then the expected [5] on field [Map4] value [123456]
 ERROR: error 1: a:a, b:b
@@ -439,6 +478,9 @@ ERROR: error 6
 ERROR: error 7
 ERROR: error 8
 ERROR: error 9
+ERROR: the value [11] shouldn't be equal to the excluded options [11;22;33] on field [NotOption]
+ERROR: the value [22] shouldn't be equal to the excluded options [11;22;33] on field [NotOption]
+ERROR: the value [33] shouldn't be equal to the excluded options [11;22;33] on field [NotOption]
 ERROR: error 10
 ERROR: error 11
 ERROR: error 17
@@ -458,8 +500,6 @@ ERROR: the value [ABC] is invalid for type numeric on field [TypeNumeric] value 
 ERROR: the value [ERRADO] is invalid for type bool on field [TypeBool] value [ERRADO]
 ERROR: the value should be null on field [ShouldBeNull] instead of [should be null]
 ERROR: the value shouldn't be null on field [ShouldNotBeNull]
-ERROR: the value shouldn't be null on field [Interface]
-ERROR: the value shouldn't be zero on field [Interface]
 
 AFTER SET: 321
 AFTER NEXT SET: 321
@@ -470,7 +510,7 @@ AFTER FROM KEY: aaaaa-3245-79-tem-espacos-
 AFTER LOWER:      aqui       tem     espacos    !!   
 
 AFTER UPPER:      AQUI       TEM     ESPAÇOS    !!   
-AFTER DISTINCT INT POINTER: [0xc0000202f8 0xc000020310]
+AFTER DISTINCT INT POINTER: [0xc0000a42a8 0xc0000a42c0]
 AFTER DISTINCT INT: [1 2]
 AFTER DISTINCT STRING: [a b]
 AFTER DISTINCT BOOL: [true false]
@@ -478,9 +518,16 @@ AFTER DISTINCT FLOAT: [1.1 1.2]
 AFTER DISTINCT ARRAY2: [111 222]
 FIRST MD5: d41d8cd98f00b204e9800998ecf8427e
 SECOND MD5: 2fe04e524ba40505a82e03a2819429cc
-RANDOM: A Oys Hvoh Idnsm Rndynx 405
-RANDOM BY ARG: O Meu Novo Teste Random 123
+RANDOM: U Yet Vúùx Pùíãr Cnkíhx 283
+RANDOM BY ARG: T Mèp Rréá Ôôtìe Shtpuj 793
 RANDOM BY ARG CLEAN: 
+LAST NAME: ribeiro
+LAST NAME 2: ribeiro
+
+ERRORS: 2
+
+ERROR: the value shouldn't be zero on field [Data]
+ERROR: the value shouldn't be zero on field [Array]
 ```
 
 ## Known issues
