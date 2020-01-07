@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"time"
 	"validator"
 
 	"errors"
@@ -27,36 +28,36 @@ type Items struct {
 }
 
 type Example struct {
-	Interface               interface{}       `validate:"notnull, notzero"`
-	Interfaces              []interface{}     `validate:"notnull, notzero"`
+	Interface               interface{}       `validate:"not-null, not-empty"`
+	Interfaces              []interface{}     `validate:"not-null, not-empty"`
 	Array                   []string          `validate:"item:size=5"`
 	Array2                  []string          `validate:"item:set-distinct"`
 	Array3                  Items             `validate:"item:size=5"`
 	Map4                    map[string]string `validate:"item:size=5, key:size=5"`
-	Name                    string            `validate:"value=joao, dummy_middle, error={ErrorTag1:a;b}, max=10"`
-	Age                     int               `validate:"value=30, error={ErrorTag99}"`
-	Street                  int               `validate:"max=10, error={ErrorTag3}"`
-	Brothers                []Example2        `validate:"size=1, error={ErrorTag4}"`
-	Id                      uuid.UUID         `validate:"notzero, error={ErrorTag5}"`
-	Option1                 string            `validate:"options=aa;bb;cc, error={ErrorTag6}"`
-	Option2                 int               `validate:"options=11;22;33, error={ErrorTag7}"`
-	Option3                 []string          `validate:"options=aa;bb;cc, error={ErrorTag8}"`
-	Option4                 []int             `validate:"options=11;22;33, error={ErrorTag9}"`
-	NotOption               []int             `validate:"notoptions=11;22;33"`
-	Map1                    map[string]int    `validate:"options=aa:11;bb:22;cc:33, error={ErrorTag10}"`
-	Map2                    map[int]string    `validate:"options=11:aa;22:bb;33:cc, error={ErrorTag11}"`
+	Name                    string            `validate:"value=joao, dummy_middle, error={{ErrorTag1:a;b}}, max=10"`
+	Age                     int               `validate:"value=30, error={{ErrorTag99}}"`
+	Street                  int               `validate:"max=10, error={{ErrorTag3}}"`
+	Brothers                []Example2        `validate:"size=1, error={{ErrorTag4}}"`
+	Id                      uuid.UUID         `validate:"not-empty, error={{ErrorTag5}}"`
+	Option1                 string            `validate:"options=aa;bb;cc, error={{ErrorTag6}}"`
+	Option2                 int               `validate:"options=11;22;33, error={{ErrorTag7}}"`
+	Option3                 []string          `validate:"options=aa;bb;cc, error={{ErrorTag8}}"`
+	Option4                 []int             `validate:"options=11;22;33, error={{ErrorTag9}}"`
+	NotOption               []int             `validate:"not-options=11;22;33"`
+	Map1                    map[string]int    `validate:"options=aa:11;bb:22;cc:33, error={{ErrorTag10}}"`
+	Map2                    map[int]string    `validate:"options=11:aa;22:bb;33:cc, error={{ErrorTag11}}"`
 	Url                     string            `validate:"url"`
 	Email                   string            `validate:"email"`
 	unexported              string
-	IsNill                  *string `validate:"notzero, error={ErrorTag17}"`
-	Sanitize                string  `validate:"set-sanitize=a;b;teste, error={ErrorTag17}"`
-	Callback                string  `validate:"callback=dummy_callback;dummy_callback_2, error={ErrorTag19}"`
+	IsNill                  *string `validate:"not-empty, error={{ErrorTag17}}"`
+	Sanitize                string  `validate:"set-sanitize=a;b;teste, error={{ErrorTag17}}"`
+	Callback                string  `validate:"callback=dummy_callback;dummy_callback_2, error={{ErrorTag19}}"`
 	Password                string  `json:"password" validate:"id=password"`
 	PasswordConfirm         string  `validate:"value={password}"`
 	MyName                  string  `validate:"id=name"`
 	MyAge                   int     `validate:"id=age"`
 	MyValidate              int     `validate:"if=(id=age value=30) or (id=age value=31) and (id=name value=joao), value=10"`
-	DoubleValidation        int     `validate:"notzero, error=20, min=5, error={ErrorTag21}"`
+	DoubleValidation        int     `validate:"not-empty, error=20, min=5, error={{ErrorTag21}}"`
 	Set                     int     `validate:"set=321, id=set"`
 	NextSet                 NextSet
 	DistinctIntPointer      []*int    `validate:"set-distinct"`
@@ -64,7 +65,7 @@ type Example struct {
 	DistinctString          []string  `validate:"set-distinct"`
 	DistinctBool            []bool    `validate:"set-distinct"`
 	DistinctFloat           []float32 `validate:"set-distinct"`
-	IsZero                  int       `validate:"iszero"`
+	IsZero                  int       `validate:"is-empty"`
 	Trim                    string    `validate:"set-trim"`
 	Lower                   string    `validate:"set-lower"`
 	Upper                   string    `validate:"set-upper"`
@@ -76,8 +77,8 @@ type Example struct {
 	TypeAlpha               string    `validate:"alpha"`
 	TypeNumeric             string    `validate:"numeric"`
 	TypeBool                string    `validate:"bool"`
-	ShouldBeNull            *string   `validate:"isnull"`
-	ShouldNotBeNull         *string   `validate:"notnull"`
+	ShouldBeNull            *string   `validate:"is-null"`
+	ShouldNotBeNull         *string   `validate:"not-null"`
 	FirstMd5                string    `validate:"set-md5"`
 	SecondMd5               string    `validate:"set-md5=ola"`
 	EnableEncodeRandom      bool      `validate:"id=random_enable"`
@@ -90,26 +91,30 @@ type Example struct {
 	StringContains          string    `validate:"contains=a m"`
 	Hex                     string    `validate:"hex"`
 	File                    string    `validate:"file"`
+	EmptyText               string    `validate:"set-empty"`
+	EmptyInt                int       `validate:"set-empty"`
+	EmptyArrayString        []string  `validate:"set-empty"`
+	EmptyArrayInt           []int     `validate:"set-empty"`
 }
 
 type Example2 struct {
-	Name            string         `validate:"value=joao, dummy_middle, error={ErrorTag1:a;b}, max=10"`
-	Age             int            `validate:"value=30, error={ErrorTag99}"`
-	Street          int            `validate:"max=10, error={ErrorTag3}"`
-	Id              uuid.UUID      `validate:"notzero, error={ErrorTag5}"`
-	Option1         string         `validate:"options=aa;bb;cc, error={ErrorTag6}"`
-	Option2         int            `validate:"options=11;22;33, error={ErrorTag7}"`
-	Option3         []string       `validate:"options=aa;bb;cc, error={ErrorTag8}"`
-	Option4         []int          `validate:"options=11;22;33, error={ErrorTag9}"`
-	NotOption       []int          `validate:"notoptions=11;22;33"`
-	Map1            map[string]int `validate:"options=aa:11;bb:22;cc:33, error={ErrorTag10}"`
-	Map2            map[int]string `validate:"options=11:aa;22:bb;33:cc, error={ErrorTag11}"`
+	Name            string         `validate:"value=joao, dummy_middle, error={{ErrorTag1:a;b}}, max=10"`
+	Age             int            `validate:"value=30, error={{ErrorTag99}}"`
+	Street          int            `validate:"max=10, error={{ErrorTag3}}"`
+	Id              uuid.UUID      `validate:"not-empty, error={{ErrorTag5}}"`
+	Option1         string         `validate:"options=aa;bb;cc, error={{ErrorTag6}}"`
+	Option2         int            `validate:"options=11;22;33, error={{ErrorTag7}}"`
+	Option3         []string       `validate:"options=aa;bb;cc, error={{ErrorTag8}}"`
+	Option4         []int          `validate:"options=11;22;33, error={{ErrorTag9}}"`
+	NotOption       []int          `validate:"not-options=11;22;33"`
+	Map1            map[string]int `validate:"options=aa:11;bb:22;cc:33, error={{ErrorTag10}}"`
+	Map2            map[int]string `validate:"options=11:aa;22:bb;33:cc, error={{ErrorTag11}}"`
 	Url             string         `validate:"url"`
 	Email           string         `validate:"email"`
 	unexported      string
-	IsNill          *string   `validate:"notzero, error={ErrorTag17}"`
-	Sanitize        string    `validate:"set-sanitize=a;b;teste, error={ErrorTag17}"`
-	Callback        string    `validate:"callback=dummy_callback, error={ErrorTag19}"`
+	IsNill          *string   `validate:"not-empty, error={{ErrorTag17}}"`
+	Sanitize        string    `validate:"set-sanitize=a;b;teste, error={{ErrorTag17}}"`
+	Callback        string    `validate:"callback=dummy_callback, error={{ErrorTag19}}"`
 	CallbackArgs    string    `validate:"args=a;b;c, callback=dummy_args_callback"`
 	Password        string    `json:"password" validate:"id=password"`
 	PasswordConfirm string    `validate:"value={password}"`
@@ -269,6 +274,10 @@ func main() {
 		StringContains:          "a m",
 		Hex:                     "48656c6c6f20476f7068657221",
 		File:                    "./README.md",
+		EmptyText:               "text",
+		EmptyInt:                111,
+		EmptyArrayString:        []string{"text", "text"},
+		EmptyArrayInt:           []int{1, 2},
 		Brothers: []Example2{
 			Example2{
 				Name:            "jessica",
@@ -306,6 +315,10 @@ func main() {
 	fmt.Printf("\nBEFORE DISTINCT BOOL: %+v", example.DistinctBool)
 	fmt.Printf("\nBEFORE DISTINCT FLOAT: %+v", example.DistinctFloat)
 	fmt.Printf("\nBEFORE DISTINCT ARRAY2: %+v", example.Array2)
+	fmt.Printf("\nBEFORE EMPTY TEXT: %+v", example.EmptyText)
+	fmt.Printf("\nBEFORE EMPTY INT: %+v", example.EmptyInt)
+	fmt.Printf("\nBEFORE EMPTY ARRAY TEXT: %+v", example.EmptyArrayString)
+	fmt.Printf("\nBEFORE EMPTY ARRAY INT: %+v", example.EmptyArrayInt)
 
 	// validate
 	if errs := validator.Validate(&example,
@@ -343,6 +356,11 @@ func main() {
 	fmt.Printf("\nAFTER DISTINCT BOOL: %+v", example.DistinctBool)
 	fmt.Printf("\nAFTER DISTINCT FLOAT: %+v", example.DistinctFloat)
 	fmt.Printf("\nAFTER DISTINCT ARRAY2: %+v", example.Array2)
+	fmt.Printf("\nAFTER EMPTY TEXT: %+v", example.EmptyText)
+	fmt.Printf("\nAFTER EMPTY INT: %+v", example.EmptyInt)
+	fmt.Printf("\nAFTER EMPTY ARRAY TEXT: %+v", example.EmptyArrayString)
+	fmt.Printf("\nAFTER EMPTY ARRAY INT: %+v", example.EmptyArrayInt)
+
 	fmt.Printf("\nFIRST MD5: %+v", example.FirstMd5)
 	fmt.Printf("\nSECOND MD5: %+v", example.SecondMd5)
 	fmt.Printf("\nRANDOM: %+v", example.Random)
@@ -354,9 +372,9 @@ func main() {
 	// validate embed struct
 	if errs := validator.Validate(struct {
 		Data struct {
-			Name  string `validate:"notnull, iszero"`
-			Array []int  `validate:"notnull, notzero"`
-		} `validate:"notnull, notzero"`
+			Name  string `validate:"not-null, is-empty"`
+			Array []int  `validate:"not-null, not-empty"`
+		} `validate:"not-null, not-empty"`
 	}{},
 		validator.NewArgument("random_enable", false),
 		validator.NewArgument("random_title_enable", true),
@@ -366,4 +384,89 @@ func main() {
 			fmt.Printf("\nERROR: %s", err)
 		}
 	}
+
+	// benchmark
+	timingValidator()
+	timingManualValidation()
+}
+
+type Example4 struct {
+	Name    string `validate:"value=joao, error={{ErrorTag1:a;b}}, max=10"`
+	Age     int    `validate:"value=30, error={{ErrorTag99}}"`
+	Street  int    `validate:"max=10, error={{ErrorTag3}}"`
+	Option1 string `validate:"options=aa;bb;cc, error={{ErrorTag6}}"`
+	Email   string `validate:"email"`
+}
+
+func timingValidator() {
+	fmt.Println("\n-> timing with validator")
+
+	// test
+	start := time.Now()
+
+	example := Example4{
+		Name:    "joao",
+		Age:     30,
+		Street:  10,
+		Option1: "aa",
+		Email:   "joaosoft@gmail.com",
+	}
+
+	// validate
+	if errs := validator.Validate(&example); len(errs) > 0 {
+		fmt.Printf("\n\nERRORS: %+v\n", errs)
+	}
+
+	fmt.Printf("Elapsed time: %f", time.Since(start).Seconds())
+}
+
+func timingManualValidation() {
+	fmt.Println("\n-> timing without validator")
+
+	// test
+	start := time.Now()
+
+	example := Example4{
+		Name:    "joao",
+		Age:     30,
+		Street:  10,
+		Option1: "aa",
+		Email:   "joaosoft@gmail.com",
+	}
+
+	// validate
+	var errorList []error
+
+	if example.Name != "joao" {
+		errorList = append(errorList, fmt.Errorf(errs["ErrorTag1"].Error(), "a", "b"))
+	}
+
+	if example.Age != 30 {
+		errorList = append(errorList, errs["ErrorTag99"])
+	}
+
+	if example.Street > 10 {
+		errorList = append(errorList, errs["ErrorTag3"])
+	}
+
+	if example.Option1 != "aa" &&
+		example.Option1 != "bb" &&
+		example.Option1 != "cc" {
+		errorList = append(errorList, errs["ErrorTag6"])
+	}
+
+	r, err := regexp.Compile(validator.ConstRegexForEmail)
+	if err != nil {
+		panic(err)
+	}
+
+	if !r.MatchString(example.Email) {
+		errorList = append(errorList, errors.New("invalid email"))
+	}
+
+	if len(errorList) > 0 {
+		fmt.Printf("\n\nERRORS: %+v\n", errorList)
+	}
+
+	fmt.Printf("Elapsed time: %f", time.Since(start).Seconds())
 }

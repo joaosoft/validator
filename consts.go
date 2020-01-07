@@ -2,6 +2,7 @@ package validator
 
 const (
 	ConstRegexForTagValue = "{[A-Za-z0-9_-]+:?([A-Za-z0-9_-];?)+}"
+	ConstRegexForTag      = "{{[A-Za-z0-9_-]+:?([A-Za-z0-9_-];?)+}}"
 	ConstRegexForEmail    = "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"
 
 	ConstDefaultValidationTag = "validate"
@@ -19,14 +20,14 @@ const (
 	ConstTagIf         = "if"
 	ConstTagNot        = "not"
 	ConstTagOptions    = "options"
-	ConstTagNotOptions = "notoptions"
+	ConstTagNotOptions = "not-options"
 	ConstTagSize       = "size"
 	ConstTagMin        = "min"
 	ConstTagMax        = "max"
-	ConstTagNotZero    = "notzero"
-	ConstTagIsZero     = "iszero"
-	ConstTagNotNull    = "notnull"
-	ConstTagIsNull     = "isnull"
+	ConstTagNotZero    = "not-empty"
+	ConstTagIsZero     = "is-empty"
+	ConstTagNotNull    = "not-null"
+	ConstTagIsNull     = "is-null"
 	ConstTagRegex      = "regex"
 	ConstTagCallback   = "callback"
 	ConstTagAlpha      = "alpha"
@@ -47,6 +48,7 @@ const (
 	ConstTagFile       = "file"
 
 	ConstTagSet         = "set"
+	ConstTagSetEmpty    = "set-empty"
 	ConstTagSetDistinct = "set-distinct"
 	ConstTagSetTrim     = "set-trim"
 	ConstTagSetTitle    = "set-title"

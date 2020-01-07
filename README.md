@@ -12,14 +12,14 @@ A simple struct validator by tags (exported fields only).
 * value (equal to)
 * not (not equal to)
 * options (one of the options)
-* notoptions (none of the options)
+* not-options (none of the options)
 * size (size equal to)
 * min 
 * max 
-* notzero (also supports uuid zero validation)
-* iszero (also supports uuid zero validation)
-* notnull 
-* isnull 
+* not-empty (also supports uuid empty validation)
+* is-empty (also supports uuid empty validation)
+* not-null 
+* is-null 
 * regex
 * url
 * email
@@ -46,6 +46,7 @@ A simple struct validator by tags (exported fields only).
 ###### << command >>={id_field} can be used on all commands and will be replaced with the value of the field with id=id_field; if not exists by the manual sent args, if not exists json:"id_field"
 ###### to use this you need to use the variable address, like this `validator.Validate(&example)`
 * set (allows to set native values) 
+* set-empty
 * set-md5
 * set-random
 * set-sanitize (clean characters)
@@ -101,8 +102,8 @@ type Items struct {
 }
 
 type Example struct {
-	Interface               interface{}       `validate:"notnull, notzero"`
-	Interfaces              []interface{}     `validate:"notnull, notzero"`
+	Interface               interface{}       `validate:"notnull, notempty"`
+	Interfaces              []interface{}     `validate:"notnull, notempty"`
 	Array                   []string          `validate:"item:size=5"`
 	Array2                  []string          `validate:"item:set-distinct"`
 	Array3                  Items             `validate:"item:size=5"`
@@ -111,7 +112,7 @@ type Example struct {
 	Age                     int               `validate:"value=30, error={ErrorTag99}"`
 	Street                  int               `validate:"max=10, error={ErrorTag3}"`
 	Brothers                []Example2        `validate:"size=1, error={ErrorTag4}"`
-	Id                      uuid.UUID         `validate:"notzero, error={ErrorTag5}"`
+	Id                      uuid.UUID         `validate:"notempty, error={ErrorTag5}"`
 	Option1                 string            `validate:"options=aa;bb;cc, error={ErrorTag6}"`
 	Option2                 int               `validate:"options=11;22;33, error={ErrorTag7}"`
 	Option3                 []string          `validate:"options=aa;bb;cc, error={ErrorTag8}"`
@@ -122,7 +123,7 @@ type Example struct {
 	Url                     string            `validate:"url"`
 	Email                   string            `validate:"email"`
 	unexported              string
-	IsNill                  *string `validate:"notzero, error={ErrorTag17}"`
+	IsNill                  *string `validate:"notempty, error={ErrorTag17}"`
 	Sanitize                string  `validate:"set-sanitize=a;b;teste, error={ErrorTag17}"`
 	Callback                string  `validate:"callback=dummy_callback;dummy_callback_2, error={ErrorTag19}"`
 	Password                string  `json:"password" validate:"id=password"`
@@ -130,7 +131,7 @@ type Example struct {
 	MyName                  string  `validate:"id=name"`
 	MyAge                   int     `validate:"id=age"`
 	MyValidate              int     `validate:"if=(id=age value=30) or (id=age value=31) and (id=name value=joao), value=10"`
-	DoubleValidation        int     `validate:"notzero, error=20, min=5, error={ErrorTag21}"`
+	DoubleValidation        int     `validate:"notempty, error=20, min=5, error={ErrorTag21}"`
 	Set                     int     `validate:"set=321, id=set"`
 	NextSet                 NextSet
 	DistinctIntPointer      []*int    `validate:"set-distinct"`
@@ -138,7 +139,7 @@ type Example struct {
 	DistinctString          []string  `validate:"set-distinct"`
 	DistinctBool            []bool    `validate:"set-distinct"`
 	DistinctFloat           []float32 `validate:"set-distinct"`
-	IsZero                  int       `validate:"iszero"`
+	IsZero                  int       `validate:"isempty"`
 	Trim                    string    `validate:"set-trim"`
 	Lower                   string    `validate:"set-lower"`
 	Upper                   string    `validate:"set-upper"`
@@ -170,7 +171,7 @@ type Example2 struct {
 	Name            string         `validate:"value=joao, dummy_middle, error={ErrorTag1:a;b}, max=10"`
 	Age             int            `validate:"value=30, error={ErrorTag99}"`
 	Street          int            `validate:"max=10, error={ErrorTag3}"`
-	Id              uuid.UUID      `validate:"notzero, error={ErrorTag5}"`
+	Id              uuid.UUID      `validate:"notempty, error={ErrorTag5}"`
 	Option1         string         `validate:"options=aa;bb;cc, error={ErrorTag6}"`
 	Option2         int            `validate:"options=11;22;33, error={ErrorTag7}"`
 	Option3         []string       `validate:"options=aa;bb;cc, error={ErrorTag8}"`
@@ -181,7 +182,7 @@ type Example2 struct {
 	Url             string         `validate:"url"`
 	Email           string         `validate:"email"`
 	unexported      string
-	IsNill          *string   `validate:"notzero, error={ErrorTag17}"`
+	IsNill          *string   `validate:"notempty, error={ErrorTag17}"`
 	Sanitize        string    `validate:"set-sanitize=a;b;teste, error={ErrorTag17}"`
 	Callback        string    `validate:"callback=dummy_callback, error={ErrorTag19}"`
 	CallbackArgs    string    `validate:"args=a;b;c, callback=dummy_args_callback"`
@@ -428,9 +429,9 @@ func main() {
 	// validate embed struct
 	if errs := validator.Validate(struct {
 		Data struct {
-			Name  string `validate:"notnull, iszero"`
-			Array []int  `validate:"notnull, notzero"`
-		} `validate:"notnull, notzero"`
+			Name  string `validate:"notnull, isempty"`
+			Array []int  `validate:"notnull, notempty"`
+		} `validate:"notnull, notempty"`
 	}{},
 		validator.NewArgument("random_enable", false),
 		validator.NewArgument("random_title_enable", true),
@@ -526,8 +527,8 @@ LAST NAME 2: ribeiro
 
 ERRORS: 2
 
-ERROR: the value shouldn't be zero on field [Data]
-ERROR: the value shouldn't be zero on field [Array]
+ERROR: the value shouldn't be empty on field [Data]
+ERROR: the value shouldn't be empty on field [Array]
 ```
 
 ## Known issues

@@ -219,7 +219,7 @@ func (v *Validator) validate_options(context *ValidatorContext, validationData *
 	return rtnErrs
 }
 
-func (v *Validator) validate_notoptions(context *ValidatorContext, validationData *ValidationData) []error {
+func (v *Validator) validate_not_options(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
 	isNil, obj, value := v._getValue(validationData.Value)
@@ -471,18 +471,18 @@ func (v *Validator) validate_max(context *ValidatorContext, validationData *Vali
 	return rtnErrs
 }
 
-func (v *Validator) validate_notzero(context *ValidatorContext, validationData *ValidationData) []error {
+func (v *Validator) validate_not_empty(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
-	if errs := v.validate_iszero(context, validationData); len(errs) == 0 {
-		err := fmt.Errorf("the value shouldn't be zero on field [%s]", validationData.Name)
+	if errs := v.validate_is_empty(context, validationData); len(errs) == 0 {
+		err := fmt.Errorf("the value shouldn't be empty on field [%s]", validationData.Name)
 		rtnErrs = append(rtnErrs, err)
 	}
 
 	return rtnErrs
 }
 
-func (v *Validator) validate_isnull(context *ValidatorContext, validationData *ValidationData) []error {
+func (v *Validator) validate_is_null(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
 	isNil, _, value := v._getValue(validationData.Value)
@@ -494,10 +494,10 @@ func (v *Validator) validate_isnull(context *ValidatorContext, validationData *V
 	return rtnErrs
 }
 
-func (v *Validator) validate_notnull(context *ValidatorContext, validationData *ValidationData) []error {
+func (v *Validator) validate_not_null(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
-	if errs := v.validate_isnull(context, validationData); len(errs) == 0 {
+	if errs := v.validate_is_null(context, validationData); len(errs) == 0 {
 		err := fmt.Errorf("the value shouldn't be null on field [%s]", validationData.Name)
 		rtnErrs = append(rtnErrs, err)
 	}
@@ -505,7 +505,7 @@ func (v *Validator) validate_notnull(context *ValidatorContext, validationData *
 	return rtnErrs
 }
 
-func (v *Validator) validate_iszero(context *ValidatorContext, validationData *ValidationData) []error {
+func (v *Validator) validate_is_empty(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
 	var isZero bool
@@ -543,7 +543,7 @@ func (v *Validator) validate_iszero(context *ValidatorContext, validationData *V
 	}
 
 	if !isZero {
-		err := fmt.Errorf("the value should be zero on field [%s] instead of [%+v]", validationData.Name, value)
+		err := fmt.Errorf("the value should be empty on field [%s] instead of [%+v]", validationData.Name, value)
 		rtnErrs = append(rtnErrs, err)
 	}
 
@@ -609,58 +609,70 @@ func (v *Validator) validate_error(context *ValidatorContext, validationData *Va
 		if _, ok := validationData.ErrorsReplaced[e]; ok {
 			continue
 		}
-		if v.errorCodeHandler != nil {
-			var expected string
 
-			if validationData.Expected != nil {
-				expected = validationData.Expected.(string)
+		if v.errorCodeHandler == nil {
+			return rtnErrs
+		}
+		var expected string
+
+		if validationData.Expected != nil {
+			expected = validationData.Expected.(string)
+		}
+
+		matched, err := regexp.MatchString(ConstRegexForTag, expected)
+		if err != nil {
+			rtnErrs = append(rtnErrs, err)
+			return rtnErrs
+		}
+
+		if !matched {
+			expected, err := v._loadExpectedValue(context, validationData.Expected)
+			if err != nil {
+				rtnErrs = append(rtnErrs, err)
+				return rtnErrs
 			}
 
-			if matched, err := regexp.MatchString(ConstRegexForTagValue, expected); err != nil {
-				rtnErrs = append(rtnErrs, err)
-			} else {
-				if matched {
-					replacer := strings.NewReplacer("{", "", "}", "")
-					expected := replacer.Replace(validationData.Expected.(string))
+			strValue := v._convertToString(expected)
 
-					split := strings.SplitN(expected, ":", 2)
-					if len(split) == 0 {
-						rtnErrs = append(rtnErrs, fmt.Errorf("invalid tag error defined [%s]", expected))
-						continue
+			newErr := errors.New(strValue)
+			(*validationData.Errors)[i] = newErr
+			validationData.ErrorsReplaced[newErr] = true
+		} else {
+			replacer := strings.NewReplacer("{{", "", "}}", "")
+			expected := replacer.Replace(validationData.Expected.(string))
+
+			split := strings.SplitN(expected, ":", 2)
+			if len(split) == 0 {
+				rtnErrs = append(rtnErrs, fmt.Errorf("invalid tag error defined [%s]", expected))
+				continue
+			}
+
+			if _, ok := added[split[0]]; !ok {
+				var arguments []interface{}
+				if len(split) == 2 {
+					splitArgs := strings.Split(split[1], ";")
+					for _, arg := range splitArgs {
+						arguments = append(arguments, arg)
 					}
+				}
 
-					if _, ok := added[split[0]]; !ok {
-						var arguments []interface{}
-						if len(split) == 2 {
-							splitArgs := strings.Split(split[1], ";")
-							for _, arg := range splitArgs {
-								arguments = append(arguments, arg)
-							}
-						}
+				validationData.ErrorData = &ErrorData{
+					Code:      split[0],
+					Arguments: arguments,
+				}
 
-						validationData.ErrorData = &ErrorData{
-							Code:      split[0],
-							Arguments: arguments,
-						}
-
-						newErr := v.errorCodeHandler(context, validationData)
-						if newErr != nil {
-							(*validationData.Errors)[i] = newErr
-							validationData.ErrorsReplaced[newErr] = true
-						}
-
-						added[split[0]] = true
-					} else {
-						if len(*validationData.Errors)-1 == i {
-							*validationData.Errors = (*validationData.Errors)[:i]
-						} else {
-							*validationData.Errors = append((*validationData.Errors)[:i], (*validationData.Errors)[i+1:]...)
-						}
-					}
-				} else {
-					newErr := errors.New(expected)
+				newErr := v.errorCodeHandler(context, validationData)
+				if newErr != nil {
 					(*validationData.Errors)[i] = newErr
 					validationData.ErrorsReplaced[newErr] = true
+				}
+
+				added[split[0]] = true
+			} else {
+				if len(*validationData.Errors)-1 == i {
+					*validationData.Errors = (*validationData.Errors)[:i]
+				} else {
+					*validationData.Errors = append((*validationData.Errors)[:i], (*validationData.Errors)[i+1:]...)
 				}
 			}
 		}
@@ -899,31 +911,29 @@ func (v *Validator) validate_set(context *ValidatorContext, validationData *Vali
 		return rtnErrs
 	}
 
-	newExpected := v._convertToString(validationData.Expected)
-	if matched, err := regexp.MatchString(ConstRegexForTagValue, newExpected); err != nil {
+	expected, err := v._loadExpectedValue(context, validationData.Expected)
+	if err != nil {
 		rtnErrs = append(rtnErrs, err)
 		return rtnErrs
-	} else {
-		if matched {
-			replacer := strings.NewReplacer("{", "", "}", "")
-			id := replacer.Replace(newExpected)
-			validationData.Expected = value
-
-			if newValue, ok := context.GetValue(ConstTagId, id); ok {
-				value := obj.FieldByName(validationData.Field)
-				kind := reflect.TypeOf(value).Kind()
-
-				setValue(kind, value, newValue.value.Interface())
-			} else {
-				err := fmt.Errorf("invalid set tag [%+v] on field [%s]", validationData.Expected, validationData.Name)
-				rtnErrs = append(rtnErrs, err)
-				return rtnErrs
-			}
-		} else {
-			kind := reflect.TypeOf(value).Kind()
-			setValue(kind, obj, validationData.Expected)
-		}
 	}
+
+	kind := reflect.TypeOf(value).Kind()
+	setValue(kind, obj, expected)
+
+	return rtnErrs
+}
+
+func (v *Validator) validate_set_empty(context *ValidatorContext, validationData *ValidationData) []error {
+	rtnErrs := make([]error, 0)
+
+	_, obj, value := v._getValue(validationData.Value)
+	if !obj.CanAddr() {
+		err := fmt.Errorf("the object should be passed as a pointer! when validating field [%s]", validationData.Name)
+		rtnErrs = append(rtnErrs, err)
+		return rtnErrs
+	}
+
+	obj.Set(reflect.Zero(reflect.TypeOf(value)))
 
 	return rtnErrs
 }
@@ -1032,7 +1042,7 @@ func setValue(kind reflect.Kind, obj reflect.Value, newValue interface{}) {
 	}
 }
 
-func (v *Validator) validate_distinct(context *ValidatorContext, validationData *ValidationData) []error {
+func (v *Validator) validate_set_distinct(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
 	_, parentObj, parentValue := v._getValue(validationData.Parent)
@@ -1319,7 +1329,7 @@ func (v *Validator) validate_url(context *ValidatorContext, validationData *Vali
 	switch kind {
 	case reflect.String:
 		if _, err := url.ParseRequestURI(v._convertToString(value)); err != nil {
-			err := fmt.Errorf("the value [%+v] on field [%s] should be a valid URL", value, validationData.Name)
+			err := fmt.Errorf("the value [%+v] on field [%s] should be a valid Url", value, validationData.Name)
 			rtnErrs = append(rtnErrs, err)
 		}
 	}
