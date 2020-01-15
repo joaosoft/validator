@@ -32,8 +32,8 @@ func NewValidatorHandler(validator *Validator, args ...*Argument) *ValidatorCont
 	return context
 }
 
-func (ctx *ValidatorContext) GetValue(tag string, id string) (*data, bool) {
-	if values, ok := ctx.values[tag]; ok {
+func (vc *ValidatorContext) GetValue(tag string, id string) (*data, bool) {
+	if values, ok := vc.values[tag]; ok {
 		if value, ok := values[id]; ok {
 			return value, ok
 		}
@@ -41,27 +41,27 @@ func (ctx *ValidatorContext) GetValue(tag string, id string) (*data, bool) {
 	return nil, false
 }
 
-func (ctx *ValidatorContext) SetValue(tag string, id string, value *data) bool {
-	if values, ok := ctx.values[tag]; ok {
+func (vc *ValidatorContext) SetValue(tag string, id string, value *data) bool {
+	if values, ok := vc.values[tag]; ok {
 		values[id] = value
 		return true
 	}
 	return false
 }
 
-func (v *ValidatorContext) handleValidation(value interface{}) []error {
+func (vc *ValidatorContext) handleValidation(value interface{}) []error {
 	var err error
 	errs := make([]error, 0)
 
 	// execute
-	if err = v.do(reflect.ValueOf(value), &errs); err != nil {
+	if err = vc.do(reflect.ValueOf(value), &errs); err != nil {
 		return []error{err}
 	}
 
 	return errs
 }
 
-func (v *ValidatorContext) load(value reflect.Value, errs *[]error) error {
+func (vc *ValidatorContext) load(value reflect.Value, errs *[]error) error {
 	types := reflect.TypeOf(value.Interface())
 
 again:
@@ -86,9 +86,10 @@ again:
 				continue
 			}
 
-			tagValue, exists := nextType.Tag.Lookup(v.validator.tag)
+			tagValue, exists := nextType.Tag.Lookup(vc.validator.tag)
 
 			// save id sub tags
+			var err error
 			if exists && strings.Contains(tagValue, fmt.Sprintf("%s=", ConstTagId)) {
 				var id string
 
@@ -112,9 +113,17 @@ again:
 						newField := newStruct.Field(i)
 
 						if !strings.Contains(tagValue, fmt.Sprintf("%s=", ConstTagIf)) {
-							setValue(nextValue.Kind(), newField, tag[1])
+							if err = setValue(nextValue.Kind(), newField, tag[1]); err != nil {
+								*errs = append(*errs, err)
+							}
 						} else {
-							setValue(nextValue.Kind(), newField, value.Field(i).String())
+							if err = setValue(nextValue.Kind(), newField, value.Field(i)); err != nil {
+								*errs = append(*errs, err)
+							}
+						}
+
+						if len(*errs) > 0 && !vc.validator.validateAll {
+							return nil
 						}
 
 						dat = &data{
@@ -123,7 +132,7 @@ again:
 						}
 					}
 				}
-				v.SetValue(tag[0], id, dat)
+				vc.SetValue(tag[0], id, dat)
 			}
 
 			// save json tags
@@ -134,10 +143,10 @@ again:
 					value: nextValue,
 					typ:   nextType,
 				}
-				v.SetValue(ConstTagJson, split[0], dat)
+				vc.SetValue(ConstTagJson, split[0], dat)
 			}
 
-			if err := v.load(nextValue, errs); err != nil {
+			if err := vc.load(nextValue, errs); err != nil {
 				return err
 			}
 		}
@@ -150,7 +159,7 @@ again:
 				continue
 			}
 
-			if err := v.load(nextValue, errs); err != nil {
+			if err := vc.load(nextValue, errs); err != nil {
 				return err
 			}
 		}
@@ -163,10 +172,10 @@ again:
 				continue
 			}
 
-			if err := v.load(key, errs); err != nil {
+			if err := vc.load(key, errs); err != nil {
 				return err
 			}
-			if err := v.load(nextValue, errs); err != nil {
+			if err := vc.load(nextValue, errs); err != nil {
 				return err
 			}
 		}
@@ -177,7 +186,7 @@ again:
 	return nil
 }
 
-func (v *ValidatorContext) do(value reflect.Value, errs *[]error) error {
+func (vc *ValidatorContext) do(value reflect.Value, errs *[]error) error {
 	types := reflect.TypeOf(value.Interface())
 
 again:
@@ -195,7 +204,7 @@ again:
 	case reflect.Struct:
 
 		// load id's
-		if err := v.load(reflect.ValueOf(value), errs); err != nil {
+		if err := vc.load(reflect.ValueOf(value), errs); err != nil {
 			return err
 		}
 
@@ -207,19 +216,19 @@ again:
 				continue
 			}
 
-			if err := v.doValidate(nextValue, nextType, errs); err != nil {
+			if err := vc.doValidate(nextValue, nextType, errs); err != nil {
 				return err
 			}
 
-			if len(*errs) > 0 && !v.validator.validateAll {
+			if len(*errs) > 0 && !vc.validator.validateAll {
 				return nil
 			}
 
-			if err := v.do(nextValue, errs); err != nil {
+			if err := vc.do(nextValue, errs); err != nil {
 				return err
 			}
 
-			if len(*errs) > 0 && !v.validator.validateAll {
+			if len(*errs) > 0 && !vc.validator.validateAll {
 				return nil
 			}
 		}
@@ -232,11 +241,11 @@ again:
 				continue
 			}
 
-			if err := v.do(nextValue, errs); err != nil {
+			if err := vc.do(nextValue, errs); err != nil {
 				return err
 			}
 
-			if len(*errs) > 0 && !v.validator.validateAll {
+			if len(*errs) > 0 && !vc.validator.validateAll {
 				return nil
 			}
 		}
@@ -249,19 +258,19 @@ again:
 				continue
 			}
 
-			if err := v.do(key, errs); err != nil {
+			if err := vc.do(key, errs); err != nil {
 				return err
 			}
 
-			if len(*errs) > 0 && !v.validator.validateAll {
+			if len(*errs) > 0 && !vc.validator.validateAll {
 				return nil
 			}
 
-			if err := v.do(nextValue, errs); err != nil {
+			if err := vc.do(nextValue, errs); err != nil {
 				return err
 			}
 
-			if len(*errs) > 0 && !v.validator.validateAll {
+			if len(*errs) > 0 && !vc.validator.validateAll {
 				return nil
 			}
 		}
@@ -272,19 +281,19 @@ again:
 	return nil
 }
 
-func (v *ValidatorContext) doValidate(value reflect.Value, typ reflect.StructField, errs *[]error) error {
+func (vc *ValidatorContext) doValidate(value reflect.Value, typ reflect.StructField, errs *[]error) error {
 
-	tag, exists := typ.Tag.Lookup(v.validator.tag)
+	tag, exists := typ.Tag.Lookup(vc.validator.tag)
 	if !exists {
 		return nil
 	}
 
 	validations := strings.Split(tag, ",")
 
-	return v.execute(typ, value, validations, errs)
+	return vc.execute(typ, value, validations, errs)
 }
 
-func (v *ValidatorContext) getFieldId(validations []string) string {
+func (vc *ValidatorContext) getFieldId(validations []string) string {
 	for _, validation := range validations {
 		options := strings.SplitN(validation, "=", 2)
 		tag := strings.TrimSpace(options[0])
@@ -297,7 +306,7 @@ func (v *ValidatorContext) getFieldId(validations []string) string {
 	return ""
 }
 
-func (v *ValidatorContext) execute(typ reflect.StructField, value reflect.Value, validations []string, errs *[]error) error {
+func (vc *ValidatorContext) execute(typ reflect.StructField, value reflect.Value, validations []string, errs *[]error) error {
 	var err error
 	var itErrs []error
 	var replacedErrors = make(map[error]bool)
@@ -309,7 +318,7 @@ func (v *ValidatorContext) execute(typ reflect.StructField, value reflect.Value,
 	}()
 
 	baseData := &BaseData{
-		Id:        v.getFieldId(validations),
+		Id:        vc.getFieldId(validations),
 		Arguments: make([]interface{}, 0),
 	}
 
@@ -326,11 +335,11 @@ func (v *ValidatorContext) execute(typ reflect.StructField, value reflect.Value,
 			tag = split[1]
 		}
 
-		if onlyHandleNextErrorTag && !v.validator.validateAll && tag != ConstTagError {
+		if onlyHandleNextErrorTag && !vc.validator.validateAll && tag != ConstTagError {
 			continue
 		}
 
-		if _, ok := v.validator.activeHandlers[tag]; !ok {
+		if _, ok := vc.validator.activeHandlers[tag]; !ok {
 			return fmt.Errorf("invalid tag [%s]", tag)
 		}
 
@@ -399,7 +408,7 @@ func (v *ValidatorContext) execute(typ reflect.StructField, value reflect.Value,
 						ErrorsReplaced: replacedErrors,
 					}
 
-					err = v.executeHandlers(tag, &validationData, &itErrs)
+					err = vc.executeHandlers(tag, &validationData, &itErrs)
 				}
 			case reflect.Map:
 				for _, key := range value.MapKeys() {
@@ -428,7 +437,7 @@ func (v *ValidatorContext) execute(typ reflect.StructField, value reflect.Value,
 						ErrorsReplaced: replacedErrors,
 					}
 
-					err = v.executeHandlers(tag, &validationData, &itErrs)
+					err = vc.executeHandlers(tag, &validationData, &itErrs)
 				}
 			case reflect.Struct:
 				for i := 0; i < types.NumField(); i++ {
@@ -449,7 +458,7 @@ func (v *ValidatorContext) execute(typ reflect.StructField, value reflect.Value,
 						ErrorsReplaced: replacedErrors,
 					}
 
-					err = v.executeHandlers(tag, &validationData, &itErrs)
+					err = vc.executeHandlers(tag, &validationData, &itErrs)
 				}
 			}
 
@@ -469,10 +478,10 @@ func (v *ValidatorContext) execute(typ reflect.StructField, value reflect.Value,
 				ErrorsReplaced: replacedErrors,
 			}
 
-			err = v.executeHandlers(tag, &validationData, &itErrs)
+			err = vc.executeHandlers(tag, &validationData, &itErrs)
 		}
 
-		if onlyHandleNextErrorTag && !v.validator.validateAll && tag == ConstTagError {
+		if onlyHandleNextErrorTag && !vc.validator.validateAll && tag == ConstTagError {
 			if err == ErrorSkipValidation {
 				skipValidation = true
 				continue
@@ -491,12 +500,12 @@ func (v *ValidatorContext) execute(typ reflect.StructField, value reflect.Value,
 		}
 
 		if len(*errs) > 0 {
-			if !onlyHandleNextErrorTag && !v.validator.validateAll && tag != ConstTagError {
+			if !onlyHandleNextErrorTag && !vc.validator.validateAll && tag != ConstTagError {
 				onlyHandleNextErrorTag = true
 				continue
 			}
 
-			if !v.validator.validateAll {
+			if !vc.validator.validateAll {
 				return nil
 			}
 		}
@@ -505,11 +514,11 @@ func (v *ValidatorContext) execute(typ reflect.StructField, value reflect.Value,
 	return nil
 }
 
-func (v *ValidatorContext) executeHandlers(tag string, validationData *ValidationData, errs *[]error) error {
+func (vc *ValidatorContext) executeHandlers(tag string, validationData *ValidationData, errs *[]error) error {
 	var err error
 
-	if _, ok := v.validator.handlersBefore[tag]; ok {
-		if rtnErrs := v.validator.handlersBefore[tag](v, validationData); rtnErrs != nil && len(rtnErrs) > 0 {
+	if _, ok := vc.validator.handlersBefore[tag]; ok {
+		if rtnErrs := vc.validator.handlersBefore[tag](vc, validationData); rtnErrs != nil && len(rtnErrs) > 0 {
 
 			// skip validation
 			if rtnErrs[0] == ErrorSkipValidation {
@@ -519,14 +528,14 @@ func (v *ValidatorContext) executeHandlers(tag string, validationData *Validatio
 		}
 	}
 
-	if _, ok := v.validator.handlersMiddle[tag]; ok {
-		if rtnErrs := v.validator.handlersMiddle[tag](v, validationData); rtnErrs != nil && len(rtnErrs) > 0 {
+	if _, ok := vc.validator.handlersMiddle[tag]; ok {
+		if rtnErrs := vc.validator.handlersMiddle[tag](vc, validationData); rtnErrs != nil && len(rtnErrs) > 0 {
 			*errs = append(*errs, rtnErrs...)
 		}
 	}
 
-	if _, ok := v.validator.handlersAfter[tag]; ok {
-		if rtnErrs := v.validator.handlersAfter[tag](v, validationData); rtnErrs != nil && len(rtnErrs) > 0 {
+	if _, ok := vc.validator.handlersAfter[tag]; ok {
+		if rtnErrs := vc.validator.handlersAfter[tag](vc, validationData); rtnErrs != nil && len(rtnErrs) > 0 {
 			*errs = append(*errs, rtnErrs...)
 		}
 	}

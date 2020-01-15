@@ -832,7 +832,10 @@ func (v *Validator) validate_set_trim(context *ValidatorContext, validationData 
 		}
 
 		newValue = string(r.ReplaceAll(bytes.TrimSpace([]byte(newValue)), []byte(" ")))
-		setValue(kind, obj, newValue)
+		if err = setValue(kind, obj, newValue); err != nil {
+			rtnErrs = append(rtnErrs, err)
+			return rtnErrs
+		}
 	}
 
 	return rtnErrs
@@ -853,7 +856,10 @@ func (v *Validator) validate_set_title(context *ValidatorContext, validationData
 	switch kind {
 	case reflect.String:
 		newValue := strings.Title(value.(string))
-		setValue(kind, obj, newValue)
+		if err := setValue(kind, obj, newValue); err != nil {
+			rtnErrs = append(rtnErrs, err)
+			return rtnErrs
+		}
 	}
 
 	return rtnErrs
@@ -874,7 +880,10 @@ func (v *Validator) validate_set_upper(context *ValidatorContext, validationData
 	switch kind {
 	case reflect.String:
 		newValue := strings.ToUpper(value.(string))
-		setValue(kind, obj, newValue)
+		if err := setValue(kind, obj, newValue); err != nil {
+			rtnErrs = append(rtnErrs, err)
+			return rtnErrs
+		}
 	}
 
 	return rtnErrs
@@ -895,7 +904,10 @@ func (v *Validator) validate_set_lower(context *ValidatorContext, validationData
 	switch kind {
 	case reflect.String:
 		newValue := strings.ToLower(value.(string))
-		setValue(kind, obj, newValue)
+		if err := setValue(kind, obj, newValue); err != nil {
+			rtnErrs = append(rtnErrs, err)
+			return rtnErrs
+		}
 	}
 
 	return rtnErrs
@@ -918,7 +930,10 @@ func (v *Validator) validate_set(context *ValidatorContext, validationData *Vali
 	}
 
 	kind := reflect.TypeOf(value).Kind()
-	setValue(kind, obj, expected)
+	if err = setValue(kind, obj, expected); err != nil {
+		rtnErrs = append(rtnErrs, err)
+		return rtnErrs
+	}
 
 	return rtnErrs
 }
@@ -962,7 +977,10 @@ func (v *Validator) validate_set_md5(context *ValidatorContext, validationData *
 		}
 
 		newValue := fmt.Sprintf("%x", md5.Sum([]byte(v._convertToString(expected))))
-		setValue(kind, obj, newValue)
+		if err = setValue(kind, obj, newValue); err != nil {
+			rtnErrs = append(rtnErrs, err)
+			return rtnErrs
+		}
 	}
 
 	return rtnErrs
@@ -991,7 +1009,10 @@ func (v *Validator) validate_set_key(context *ValidatorContext, validationData *
 			expected = value
 		}
 
-		setValue(kind, obj, convertToKey(strings.TrimSpace(v._convertToString(expected)), true))
+		if err = setValue(kind, obj, convertToKey(strings.TrimSpace(v._convertToString(expected)), true)); err != nil {
+			rtnErrs = append(rtnErrs, err)
+			return rtnErrs
+		}
 	}
 
 	return rtnErrs
@@ -1020,26 +1041,47 @@ func (v *Validator) validate_set_random(context *ValidatorContext, validationDat
 			expected = value
 		}
 
-		setValue(kind, obj, v._random(v._convertToString(expected)))
+		if err = setValue(kind, obj, v._random(v._convertToString(expected))); err != nil {
+			rtnErrs = append(rtnErrs, err)
+			return rtnErrs
+		}
 	}
 
 	return rtnErrs
 }
 
-func setValue(kind reflect.Kind, obj reflect.Value, newValue interface{}) {
-	switch kind {
-	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		v, _ := strconv.Atoi(newValue.(string))
-		obj.SetInt(int64(v))
-	case reflect.Float32, reflect.Float64:
-		v, _ := strconv.ParseFloat(newValue.(string), 64)
-		obj.SetFloat(v)
-	case reflect.String:
-		obj.SetString(newValue.(string))
-	case reflect.Bool:
-		v, _ := strconv.ParseBool(newValue.(string))
-		obj.SetBool(v)
+func setValue(kind reflect.Kind, obj reflect.Value, newValue interface{}) (err error) {
+	switch value := newValue.(type) {
+	case string:
+		switch kind {
+		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+			var v int
+			if v, err = strconv.Atoi(value); err != nil {
+				return err
+			}
+			obj.SetInt(int64(v))
+		case reflect.Float32, reflect.Float64:
+			var v float64
+			if v, err = strconv.ParseFloat(value, 64); err != nil {
+				return err
+			}
+			obj.SetFloat(v)
+		case reflect.String:
+			obj.SetString(value)
+		case reflect.Bool:
+			var v bool
+			if v, err = strconv.ParseBool(value); err != nil {
+				return err
+			}
+			obj.SetBool(v)
+		}
+	case reflect.Value:
+		obj.Set(value)
+	default:
+		obj.Set(reflect.ValueOf(value))
 	}
+
+	return nil
 }
 
 func (v *Validator) validate_set_distinct(context *ValidatorContext, validationData *ValidationData) []error {
