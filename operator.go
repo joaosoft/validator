@@ -1,9 +1,9 @@
 package validator
 
-type Operator string
+type operator string
 
 const (
-	NONE Operator = ""
-	AND  Operator = "and"
-	OR   Operator = "or"
+	operatorNone operator = ""
+	operatorAnd  operator = "and"
+	operatorOr   operator = "or"
 )

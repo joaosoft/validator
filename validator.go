@@ -7,10 +7,10 @@ import (
 func NewValidator() *Validator {
 
 	v := &Validator{
-		tag:       ConstDefaultValidationTag,
+		tag:       constDefaultValidationTag,
 		callbacks: make(map[string]callbackHandler),
 		sanitize:  make([]string, 0),
-		logger:    logger.NewLogDefault(ConstDefaultLogTag, logger.InfoLevel),
+		logger:    logger.NewLogDefault(constDefaultLogTag, logger.InfoLevel),
 	}
 
 	v.init()
@@ -93,6 +93,6 @@ func (v *Validator) AddCallback(name string, callback callbackHandler) *Validato
 	return v
 }
 
-func (v *Validator) Validate(obj interface{}, args ...*Argument) []error {
+func (v *Validator) Validate(obj interface{}, args ...*argument) []error {
 	return NewValidatorHandler(v, args...).handleValidation(obj)
 }

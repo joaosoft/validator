@@ -2,8 +2,8 @@ package validator
 
 func (v *Validator) newDefaultBeforeHandlers() map[string]beforeTagHandler {
 	return map[string]beforeTagHandler{
-		ConstTagId:   v.validate_id,
-		ConstTagIf:   v.validate_if,
-		ConstTagArgs: v.validate_args,
+		constTagId:   v.validate_id,
+		constTagIf:   v.validate_if,
+		constTagArgs: v.validate_args,
 	}
 }

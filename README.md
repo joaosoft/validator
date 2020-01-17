@@ -87,7 +87,9 @@ This examples are available in the project at [validator/examples](https://githu
 ### Code
 ```go
 const (
-	RegexForMissingParms = `%\+?[a-z]`
+	regexForMissingParms = `%\+?[a-z]`
+	constRegexForEmail     = "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"
+
 )
 
 type Data string
@@ -245,7 +247,7 @@ var errs = map[string]error{
 }
 var dummy_error_handler = func(context *validator.ValidatorContext, validationData *validator.ValidationData) error {
 	if err, ok := errs[validationData.ErrorData.Code]; ok {
-		var regx = regexp.MustCompile(RegexForMissingParms)
+		var regx = regexp.MustCompile(regexForMissingParms)
 		matches := regx.FindAllStringIndex(err.Error(), -1)
 
 		if len(matches) > 0 {
@@ -529,7 +531,7 @@ func timingManualValidation() {
 		errorList = append(errorList, errs["ErrorTag6"])
 	}
 
-	r, err := regexp.Compile(validator.ConstRegexForEmail)
+	r, err := regexp.Compile(constRegexForEmail)
 	if err != nil {
 		panic(err)
 	}

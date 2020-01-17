@@ -27,13 +27,13 @@ type Validator struct {
 	validateAll      bool
 }
 
-type Argument struct {
+type argument struct {
 	Id    string
 	Value interface{}
 }
 
-func NewArgument(id string, value interface{}) *Argument {
-	return &Argument{
+func NewArgument(id string, value interface{}) *argument {
+	return &argument{
 		Id:    id,
 		Value: value,
 	}
@@ -53,25 +53,25 @@ type ValidatorContext struct {
 	values    map[string]map[string]*data
 }
 
-type BaseData struct {
+type baseData struct {
 	Id        string
 	Arguments []interface{}
 }
 
 type ValidationData struct {
-	*BaseData
+	*baseData
 	Code           string
 	Field          string
 	Parent         reflect.Value
 	Value          reflect.Value
 	Name           string
 	Expected       interface{}
-	ErrorData      *ErrorData
+	ErrorData      *errorData
 	Errors         *[]error
 	ErrorsReplaced map[error]bool
 }
 
-type ErrorData struct {
+type errorData struct {
 	Code      string
 	Arguments []interface{}
 }
@@ -85,5 +85,5 @@ type expression struct {
 	data         *data
 	result       error
 	expected     string
-	nextOperator Operator
+	nextOperator operator
 }

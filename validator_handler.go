@@ -8,20 +8,20 @@ import (
 
 func (v *Validator) newDefaultValues() defaultValues {
 	return map[string]map[string]*data{
-		ConstTagId:   make(map[string]*data),
-		ConstTagJson: make(map[string]*data),
-		ConstTagArg:  make(map[string]*data),
+		constTagId:   make(map[string]*data),
+		constTagJson: make(map[string]*data),
+		constTagArg:  make(map[string]*data),
 	}
 }
 
-func NewValidatorHandler(validator *Validator, args ...*Argument) *ValidatorContext {
+func NewValidatorHandler(validator *Validator, args ...*argument) *ValidatorContext {
 	context := &ValidatorContext{
 		validator: validator,
 		values:    validator.newDefaultValues(),
 	}
 
 	for _, arg := range args {
-		context.values[ConstTagArg][arg.Id] = &data{
+		context.values[constTagArg][arg.Id] = &data{
 			value: reflect.ValueOf(arg.Value),
 			typ: reflect.StructField{
 				Type: reflect.TypeOf(arg.Value),
@@ -90,7 +90,7 @@ again:
 
 			// save id sub tags
 			var err error
-			if exists && strings.Contains(tagValue, fmt.Sprintf("%s=", ConstTagId)) {
+			if exists && strings.Contains(tagValue, fmt.Sprintf("%s=", constTagId)) {
 				var id string
 
 				split := strings.Split(tagValue, ",")
@@ -100,7 +100,7 @@ again:
 					tag[0] = strings.TrimSpace(tag[0])
 
 					switch tag[0] {
-					case ConstTagId:
+					case constTagId:
 						id = tag[1]
 						if dat == nil {
 							dat = &data{
@@ -108,16 +108,16 @@ again:
 								typ:   nextType,
 							}
 						}
-					case ConstTagSet:
+					case constTagSet:
 						newStruct := reflect.New(value.Type()).Elem()
 						newField := newStruct.Field(i)
 
-						if !strings.Contains(tagValue, fmt.Sprintf("%s=", ConstTagIf)) {
-							if err = setValue(nextValue.Kind(), newField, tag[1]); err != nil {
+						if !strings.Contains(tagValue, fmt.Sprintf("%s=", constTagIf)) {
+							if err = _setValue(nextValue.Kind(), newField, tag[1]); err != nil {
 								*errs = append(*errs, err)
 							}
 						} else {
-							if err = setValue(nextValue.Kind(), newField, value.Field(i)); err != nil {
+							if err = _setValue(nextValue.Kind(), newField, value.Field(i)); err != nil {
 								*errs = append(*errs, err)
 							}
 						}
@@ -136,14 +136,14 @@ again:
 			}
 
 			// save json tags
-			tagValue, exists = nextType.Tag.Lookup(ConstTagJson)
+			tagValue, exists = nextType.Tag.Lookup(constTagJson)
 			if exists && tagValue != "-" {
 				split := strings.Split(tagValue, ",")
 				dat = &data{
 					value: nextValue,
 					typ:   nextType,
 				}
-				vc.SetValue(ConstTagJson, split[0], dat)
+				vc.SetValue(constTagJson, split[0], dat)
 			}
 
 			if err := vc.load(nextValue, errs); err != nil {
@@ -298,7 +298,7 @@ func (vc *ValidatorContext) getFieldId(validations []string) string {
 		options := strings.SplitN(validation, "=", 2)
 		tag := strings.TrimSpace(options[0])
 
-		if tag == ConstTagId {
+		if tag == constTagId {
 			return options[1]
 		}
 	}
@@ -317,7 +317,7 @@ func (vc *ValidatorContext) execute(typ reflect.StructField, value reflect.Value
 		*errs = append(*errs, itErrs...)
 	}()
 
-	baseData := &BaseData{
+	baseData := &baseData{
 		Id:        vc.getFieldId(validations),
 		Arguments: make([]interface{}, 0),
 	}
@@ -335,7 +335,7 @@ func (vc *ValidatorContext) execute(typ reflect.StructField, value reflect.Value
 			tag = split[1]
 		}
 
-		if onlyHandleNextErrorTag && !vc.validator.validateAll && tag != ConstTagError {
+		if onlyHandleNextErrorTag && !vc.validator.validateAll && tag != constTagError {
 			continue
 		}
 
@@ -348,7 +348,7 @@ func (vc *ValidatorContext) execute(typ reflect.StructField, value reflect.Value
 			expected = strings.TrimSpace(options[1])
 		}
 
-		jsonName, exists := typ.Tag.Lookup(ConstTagJson)
+		jsonName, exists := typ.Tag.Lookup(constTagJson)
 		if exists {
 			split := strings.SplitN(jsonName, ",", 2)
 			name = split[0]
@@ -357,7 +357,7 @@ func (vc *ValidatorContext) execute(typ reflect.StructField, value reflect.Value
 		}
 
 		if skipValidation {
-			if tag == ConstTagIf {
+			if tag == constTagIf {
 				skipValidation = false
 			} else {
 				continue
@@ -366,7 +366,7 @@ func (vc *ValidatorContext) execute(typ reflect.StructField, value reflect.Value
 
 		// execute validations
 		switch prefix {
-		case ConstPrefixTagKey, ConstPrefixTagItem:
+		case constPrefixTagKey, constPrefixTagItem:
 			types := reflect.TypeOf(value.Interface())
 
 			if !value.CanInterface() {
@@ -384,7 +384,7 @@ func (vc *ValidatorContext) execute(typ reflect.StructField, value reflect.Value
 				}
 			}
 
-			if prefix == ConstPrefixTagKey && value.Kind() != reflect.Map {
+			if prefix == constPrefixTagKey && value.Kind() != reflect.Map {
 				continue
 			}
 
@@ -398,7 +398,7 @@ func (vc *ValidatorContext) execute(typ reflect.StructField, value reflect.Value
 					}
 
 					validationData := ValidationData{
-						BaseData:       baseData,
+						baseData:       baseData,
 						Name:           name,
 						Field:          typ.Name,
 						Parent:         value,
@@ -416,9 +416,9 @@ func (vc *ValidatorContext) execute(typ reflect.StructField, value reflect.Value
 					var nextValue reflect.Value
 
 					switch prefix {
-					case ConstPrefixTagKey:
+					case constPrefixTagKey:
 						nextValue = key
-					case ConstPrefixTagItem:
+					case constPrefixTagItem:
 						nextValue = value.MapIndex(key)
 					}
 
@@ -427,7 +427,7 @@ func (vc *ValidatorContext) execute(typ reflect.StructField, value reflect.Value
 					}
 
 					validationData := ValidationData{
-						BaseData:       baseData,
+						baseData:       baseData,
 						Name:           name,
 						Field:          typ.Name,
 						Parent:         value,
@@ -448,7 +448,7 @@ func (vc *ValidatorContext) execute(typ reflect.StructField, value reflect.Value
 					}
 
 					validationData := ValidationData{
-						BaseData:       baseData,
+						baseData:       baseData,
 						Name:           name,
 						Field:          typ.Name,
 						Parent:         value,
@@ -468,7 +468,7 @@ func (vc *ValidatorContext) execute(typ reflect.StructField, value reflect.Value
 			}
 
 			validationData := ValidationData{
-				BaseData:       baseData,
+				baseData:       baseData,
 				Name:           name,
 				Field:          typ.Name,
 				Parent:         value,
@@ -481,7 +481,7 @@ func (vc *ValidatorContext) execute(typ reflect.StructField, value reflect.Value
 			err = vc.executeHandlers(tag, &validationData, &itErrs)
 		}
 
-		if onlyHandleNextErrorTag && !vc.validator.validateAll && tag == ConstTagError {
+		if onlyHandleNextErrorTag && !vc.validator.validateAll && tag == constTagError {
 			if err == ErrorSkipValidation {
 				skipValidation = true
 				continue
@@ -500,7 +500,7 @@ func (vc *ValidatorContext) execute(typ reflect.StructField, value reflect.Value
 		}
 
 		if len(*errs) > 0 {
-			if !onlyHandleNextErrorTag && !vc.validator.validateAll && tag != ConstTagError {
+			if !onlyHandleNextErrorTag && !vc.validator.validateAll && tag != constTagError {
 				onlyHandleNextErrorTag = true
 				continue
 			}

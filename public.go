@@ -32,6 +32,6 @@ func AddCallback(name string, callback callbackHandler) *Validator {
 	return validatorInstance.AddCallback(name, callback)
 }
 
-func Validate(obj interface{}, args ...*Argument) []error {
+func Validate(obj interface{}, args ...*argument) []error {
 	return NewValidatorHandler(validatorInstance, args...).handleValidation(obj)
 }
