@@ -19,11 +19,14 @@ func (v *Validator) _convertToString(value interface{}) string {
 }
 
 func (v *Validator) _getValue(value reflect.Value) (isNil bool, _ reflect.Value, _ interface{}) {
-	if value.Kind() == reflect.Ptr {
+again:
+	if value.Kind() == reflect.Ptr || value.Kind() == reflect.Interface {
 		if value.IsNil() {
 			return true, value, value.Interface()
 		}
-		return value.Elem().Interface() == nil, value.Elem(), value.Elem().Interface()
+		value = value.Elem()
+
+		goto again
 	}
 
 	return value.Interface() == nil, value, value.Interface()
@@ -88,7 +91,6 @@ func (v *Validator) _random(strValue string) string {
 
 	return string(newValue)
 }
-
 
 func _setValue(kind reflect.Kind, obj reflect.Value, newValue interface{}) (err error) {
 	switch value := newValue.(type) {

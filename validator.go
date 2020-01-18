@@ -21,22 +21,16 @@ func NewValidator() *Validator {
 func (v *Validator) newActiveHandlers() map[string]bool {
 	handlers := make(map[string]bool)
 
-	if v.handlersBefore != nil {
-		for key, _ := range v.handlersBefore {
-			handlers[key] = true
-		}
+	for key, _ := range v.handlersBefore {
+		handlers[key] = true
 	}
 
-	if v.handlersMiddle != nil {
-		for key, _ := range v.handlersMiddle {
-			handlers[key] = true
-		}
+	for key, _ := range v.handlersMiddle {
+		handlers[key] = true
 	}
 
-	if v.handlersAfter != nil {
-		for key, _ := range v.handlersAfter {
-			handlers[key] = true
-		}
+	for key, _ := range v.handlersAfter {
+		handlers[key] = true
 	}
 
 	return handlers

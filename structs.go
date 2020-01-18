@@ -10,8 +10,8 @@ func (v *Validator) init() {
 	v.handlersBefore = v.newDefaultBeforeHandlers()
 	v.handlersMiddle = v.newDefaultMiddleHandlers()
 	v.handlersAfter = v.newDefaultPosHandlers()
-	v.activeHandlers = v.newActiveHandlers()
 
+	v.activeHandlers = v.newActiveHandlers()
 }
 
 type Validator struct {

@@ -61,18 +61,24 @@ func (vc *ValidatorContext) handleValidation(value interface{}) []error {
 	return errs
 }
 
-func (vc *ValidatorContext) load(value reflect.Value, errs *[]error) error {
+func (vc *ValidatorContext) _getValue(value reflect.Value) (reflect.Type, reflect.Value, error) {
 	types := reflect.TypeOf(value.Interface())
 
 again:
 	if (value.Kind() == reflect.Ptr || value.Kind() == reflect.Interface) && !value.IsNil() {
 		value = value.Elem()
-		if value.IsValid() {
-			types = value.Type()
-			goto again
-		} else {
-			return nil
-		}
+		types = value.Type()
+		goto again
+	}
+
+	return types, value, nil
+}
+
+func (vc *ValidatorContext) load(value reflect.Value, errs *[]error) (err error) {
+	var types reflect.Type
+	types, value, err = vc._getValue(value)
+	if err != nil {
+		return err
 	}
 
 	switch value.Kind() {
@@ -186,18 +192,11 @@ again:
 	return nil
 }
 
-func (vc *ValidatorContext) do(value reflect.Value, errs *[]error) error {
-	types := reflect.TypeOf(value.Interface())
-
-again:
-	if (value.Kind() == reflect.Ptr || value.Kind() == reflect.Interface) && !value.IsNil() {
-		value = value.Elem()
-		if value.IsValid() {
-			types = value.Type()
-			goto again
-		} else {
-			return nil
-		}
+func (vc *ValidatorContext) do(value reflect.Value, errs *[]error) (err error) {
+	var types reflect.Type
+	types, value, err = vc._getValue(value)
+	if err != nil {
+		return err
 	}
 
 	switch value.Kind() {
@@ -367,21 +366,14 @@ func (vc *ValidatorContext) execute(typ reflect.StructField, value reflect.Value
 		// execute validations
 		switch prefix {
 		case constPrefixTagKey, constPrefixTagItem:
-			types := reflect.TypeOf(value.Interface())
-
 			if !value.CanInterface() {
 				return nil
 			}
 
-		again:
-			if (value.Kind() == reflect.Ptr || value.Kind() == reflect.Interface) && !value.IsNil() {
-				value = value.Elem()
-				if value.IsValid() {
-					types = value.Type()
-					goto again
-				} else {
-					return nil
-				}
+			var types reflect.Type
+			types, value, err = vc._getValue(value)
+			if err != nil {
+				return err
 			}
 
 			if prefix == constPrefixTagKey && value.Kind() != reflect.Map {
