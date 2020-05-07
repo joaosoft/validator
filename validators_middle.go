@@ -14,6 +14,7 @@ import (
 	"strconv"
 	"strings"
 	"unicode"
+	"unicode/utf8"
 
 	uuid "github.com/satori/go.uuid"
 )
@@ -321,18 +322,18 @@ func (v *Validator) validate_size(context *ValidatorContext, validationData *Val
 	case reflect.Array, reflect.Slice, reflect.Map:
 		valueSize = int64(obj.Len())
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		valueSize = int64(len(strings.TrimSpace(strconv.Itoa(int(obj.Int())))))
+		valueSize = int64(utf8.RuneCountInString(strings.TrimSpace(strconv.Itoa(int(obj.Int())))))
 	case reflect.Float32, reflect.Float64:
-		valueSize = int64(len(strings.TrimSpace(strconv.FormatFloat(obj.Float(), 'g', 1, 64))))
+		valueSize = int64(utf8.RuneCountInString(strings.TrimSpace(strconv.FormatFloat(obj.Float(), 'g', 1, 64))))
 	case reflect.String:
-		valueSize = int64(len(strings.TrimSpace(obj.String())))
+		valueSize = int64(utf8.RuneCountInString(strings.TrimSpace(obj.String())))
 	case reflect.Bool:
-		valueSize = int64(len(strings.TrimSpace(strconv.FormatBool(obj.Bool()))))
+		valueSize = int64(utf8.RuneCountInString(strings.TrimSpace(strconv.FormatBool(obj.Bool()))))
 	default:
 		if isNil {
 			break
 		}
-		valueSize = int64(len(strings.TrimSpace(obj.String())))
+		valueSize = int64(utf8.RuneCountInString(strings.TrimSpace(obj.String())))
 	}
 
 	if valueSize != int64(size) {
@@ -370,14 +371,14 @@ func (v *Validator) validate_min(context *ValidatorContext, validationData *Vali
 	case reflect.Float32, reflect.Float64:
 		valueSize = int64(obj.Float())
 	case reflect.String:
-		valueSize = int64(len(strings.TrimSpace(obj.String())))
+		valueSize = int64(utf8.RuneCountInString(strings.TrimSpace(obj.String())))
 	case reflect.Bool:
-		valueSize = int64(len(strings.TrimSpace(strconv.FormatBool(obj.Bool()))))
+		valueSize = int64(utf8.RuneCountInString(strings.TrimSpace(strconv.FormatBool(obj.Bool()))))
 	default:
 		if isNil {
 			break
 		}
-		valueSize = int64(len(strings.TrimSpace(obj.String())))
+		valueSize = int64(utf8.RuneCountInString(strings.TrimSpace(obj.String())))
 	}
 
 	if valueSize < int64(min) {
@@ -415,14 +416,14 @@ func (v *Validator) validate_max(context *ValidatorContext, validationData *Vali
 	case reflect.Float32, reflect.Float64:
 		valueSize = int64(obj.Float())
 	case reflect.String:
-		valueSize = int64(len(strings.TrimSpace(obj.String())))
+		valueSize = int64(utf8.RuneCountInString(strings.TrimSpace(obj.String())))
 	case reflect.Bool:
-		valueSize = int64(len(strings.TrimSpace(strconv.FormatBool(obj.Bool()))))
+		valueSize = int64(utf8.RuneCountInString(strings.TrimSpace(strconv.FormatBool(obj.Bool()))))
 	default:
 		if isNil {
 			break
 		}
-		valueSize = int64(len(strings.TrimSpace(obj.String())))
+		valueSize = int64(utf8.RuneCountInString(strings.TrimSpace(obj.String())))
 	}
 
 	if valueSize > int64(max) {
@@ -491,7 +492,7 @@ func (v *Validator) validate_is_empty(context *ValidatorContext, validationData 
 	case reflect.Float32, reflect.Float64:
 		isZero = obj.Float() == 0
 	case reflect.String:
-		isZero = len(strings.TrimSpace(obj.String())) == 0
+		isZero = utf8.RuneCountInString(strings.TrimSpace(obj.String())) == 0
 	case reflect.Bool:
 		isZero = obj.Bool() == false
 	case reflect.Struct:
@@ -528,7 +529,7 @@ func (v *Validator) validate_regex(context *ValidatorContext, validationData *Va
 		return rtnErrs
 	}
 
-	if len(strValue) > 0 {
+	if utf8.RuneCountInString(strValue) > 0 {
 		if !r.MatchString(strValue) {
 			err := fmt.Errorf("invalid value [%s] on field [%s]", strValue, validationData.Name)
 			rtnErrs = append(rtnErrs, err)
