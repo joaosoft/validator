@@ -11,11 +11,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:7d0b018293773e9bf2930eefc8764af67b42dbfc5c2d19d09e5e6c0f1abeb527"
+  digest = "1:104098288eba572897274628b3b2b69ed7cd617cfff0df6af4a7fffb4d2bca81"
   name = "github.com/joaosoft/logger"
   packages = ["."]
   pruneopts = "UT"
-  revision = "41e546494f5da9d20ab6c107d779d0458a3b6f8e"
+  revision = "dcb22bea7505b8cf7436555b3eef9ba9ad621c7d"
 
 [[projects]]
   branch = "master"
@@ -33,12 +33,21 @@
   pruneopts = "UT"
   revision = "b2ce2384e17bbe0c6d34077efa39dbab3e09123b"
 
+[[projects]]
+  digest = "1:d7f1bd887dc650737a421b872ca883059580e9f8314d601f88025df4f4802dce"
+  name = "gopkg.in/yaml.v2"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "0b1645d91e851e735d3e23330303ce81f70adbe3"
+  version = "v2.3.0"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
     "github.com/joaosoft/logger",
     "github.com/satori/go.uuid",
+    "gopkg.in/yaml.v2",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1

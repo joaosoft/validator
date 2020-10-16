@@ -86,7 +86,7 @@ func (v *Validator) validate_options(context *ValidatorContext, validationData *
 			opt, err = v._loadExpectedValue(context, option)
 			if err != nil {
 				rtnErrs = append(rtnErrs, err)
-				if !v.validateAll {
+				if !v.canValidateAll {
 					return rtnErrs
 				} else {
 					continue
@@ -107,7 +107,7 @@ func (v *Validator) validate_options(context *ValidatorContext, validationData *
 				invalidValue = nextValue.Interface()
 				err := fmt.Errorf("the value [%+v] is different of the expected options [%+v] on field [%s]", invalidValue, validationData.Expected, validationData.Name)
 				rtnErrs = append(rtnErrs, err)
-				if !v.validateAll {
+				if !v.canValidateAll {
 					break
 				}
 			}
@@ -126,7 +126,7 @@ func (v *Validator) validate_options(context *ValidatorContext, validationData *
 			value, err = v._loadExpectedValue(context, values[1])
 			if err != nil {
 				rtnErrs = append(rtnErrs, err)
-				if !v.validateAll {
+				if !v.canValidateAll {
 					return rtnErrs
 				} else {
 					continue
@@ -148,7 +148,7 @@ func (v *Validator) validate_options(context *ValidatorContext, validationData *
 				invalidValue = fmt.Sprintf("%s:%s", v._convertToString(key.Interface()), v._convertToString(nextValue.Interface()))
 				err := fmt.Errorf("the value [%+v] is different of the expected options [%+v] on field [%s]", nextValue.Interface(), validationData.Expected, validationData.Name)
 				rtnErrs = append(rtnErrs, err)
-				if !v.validateAll {
+				if !v.canValidateAll {
 					break
 				}
 			}
@@ -162,7 +162,7 @@ func (v *Validator) validate_options(context *ValidatorContext, validationData *
 			opt, err = v._loadExpectedValue(context, option)
 			if err != nil {
 				rtnErrs = append(rtnErrs, err)
-				if !v.validateAll {
+				if !v.canValidateAll {
 					return rtnErrs
 				} else {
 					continue
@@ -203,7 +203,7 @@ func (v *Validator) validate_not_options(context *ValidatorContext, validationDa
 			opt, err = v._loadExpectedValue(context, option)
 			if err != nil {
 				rtnErrs = append(rtnErrs, err)
-				if !v.validateAll {
+				if !v.canValidateAll {
 					return rtnErrs
 				} else {
 					continue
@@ -224,7 +224,7 @@ func (v *Validator) validate_not_options(context *ValidatorContext, validationDa
 				invalidValue = nextValue.Interface()
 				err := fmt.Errorf("the value [%+v] shouldn't be equal to the excluded options [%+v] on field [%s]", invalidValue, validationData.Expected, validationData.Name)
 				rtnErrs = append(rtnErrs, err)
-				if !v.validateAll {
+				if !v.canValidateAll {
 					break
 				}
 			}
@@ -243,7 +243,7 @@ func (v *Validator) validate_not_options(context *ValidatorContext, validationDa
 			value, err = v._loadExpectedValue(context, values[1])
 			if err != nil {
 				rtnErrs = append(rtnErrs, err)
-				if !v.validateAll {
+				if !v.canValidateAll {
 					return rtnErrs
 				} else {
 					continue
@@ -265,7 +265,7 @@ func (v *Validator) validate_not_options(context *ValidatorContext, validationDa
 				invalidValue = fmt.Sprintf("%s:%s", v._convertToString(key.Interface()), v._convertToString(nextValue.Interface()))
 				err := fmt.Errorf("the value [%+v] shouldn't be equal to the excluded options [%+v] on field [%s]", invalidValue, validationData.Expected, validationData.Name)
 				rtnErrs = append(rtnErrs, err)
-				if !v.validateAll {
+				if !v.canValidateAll {
 					break
 				}
 			}
@@ -279,7 +279,7 @@ func (v *Validator) validate_not_options(context *ValidatorContext, validationDa
 			opt, err = v._loadExpectedValue(context, option)
 			if err != nil {
 				rtnErrs = append(rtnErrs, err)
-				if !v.validateAll {
+				if !v.canValidateAll {
 					return rtnErrs
 				} else {
 					continue
@@ -496,7 +496,7 @@ func (v *Validator) validate_is_empty(context *ValidatorContext, validationData 
 	case reflect.Bool:
 		isZero = obj.Bool() == false
 	case reflect.Struct:
-		if value != reflect.New(obj.Type()).Interface() {
+		if !reflect.DeepEqual(value, reflect.New(obj.Type()).Interface()) {
 			isZero = true
 		}
 	default:
@@ -551,7 +551,7 @@ func (v *Validator) validate_callback(context *ValidatorContext, validationData 
 				rtnErrs = append(rtnErrs, errs...)
 			}
 
-			if !v.validateAll {
+			if !v.canValidateAll {
 				return rtnErrs
 			}
 		}
@@ -625,6 +625,23 @@ func (v *Validator) validate_bool(context *ValidatorContext, validationData *Val
 	}
 
 	return rtnErrs
+}
+
+func (v *Validator) validate_password(context *ValidatorContext, validationData *ValidationData) []error {
+	isNil, _, value := v._getValue(validationData.Value)
+	strValue := v._convertToString(value)
+
+	if strValue == "" || isNil {
+		return nil
+	}
+
+	if _, ok := v.passwords[strings.ToLower(strings.TrimSpace(strValue))]; ok {
+		return []error{
+			fmt.Errorf("the value [%+v] on field [%s] should be a valid Password", value, validationData.Name),
+		}
+	}
+
+	return nil
 }
 
 func (v *Validator) validate_prefix(context *ValidatorContext, validationData *ValidationData) []error {

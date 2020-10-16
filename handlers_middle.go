@@ -18,6 +18,7 @@ func (v *Validator) newDefaultMiddleHandlers() map[string]middleTagHandler {
 		constTagAlpha:      v.validate_alpha,
 		constTagNumeric:    v.validate_numeric,
 		constTagBool:       v.validate_bool,
+		constTagPassword:   v.validate_password,
 		constTagPrefix:     v.validate_prefix,
 		constTagSuffix:     v.validate_suffix,
 		constTagContains:   v.validate_contains,

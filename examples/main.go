@@ -14,8 +14,7 @@ import (
 
 const (
 	regexForMissingParms = `%\+?[a-z]`
-	constRegexForEmail     = "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"
-
+	constRegexForEmail   = "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"
 )
 
 type Data string
@@ -97,6 +96,9 @@ type Example struct {
 	EmptyInt                int       `validate:"set-empty"`
 	EmptyArrayString        []string  `validate:"set-empty"`
 	EmptyArrayInt           []int     `validate:"set-empty"`
+	PasswordCheckError1     string    `validate:"password"`
+	PasswordCheckError2     string    `validate:"password"`
+	PasswordCheckOk1        string    `validate:"password"`
 }
 
 type Example2 struct {
@@ -280,6 +282,9 @@ func main() {
 		EmptyInt:                111,
 		EmptyArrayString:        []string{"text", "text"},
 		EmptyArrayInt:           []int{1, 2},
+		PasswordCheckError1:     "password",
+		PasswordCheckError2:     "valid",
+		PasswordCheckOk1:        "bananas",
 		Brothers: []Example2{
 			Example2{
 				Name:            "jessica",

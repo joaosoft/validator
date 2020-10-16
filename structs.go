@@ -10,21 +10,27 @@ func (v *Validator) init() {
 	v.handlersBefore = v.newDefaultBeforeHandlers()
 	v.handlersMiddle = v.newDefaultMiddleHandlers()
 	v.handlersAfter = v.newDefaultPosHandlers()
-
 	v.activeHandlers = v.newActiveHandlers()
+
+	var err error
+	v.passwords, err = v.loadPasswords()
+	if err != nil {
+		v.logger.Info(err)
+	}
 }
 
 type Validator struct {
 	tag              string
-	activeHandlers   map[string]bool
+	activeHandlers   map[string]empty
 	handlersBefore   map[string]beforeTagHandler
 	handlersMiddle   map[string]middleTagHandler
 	handlersAfter    map[string]afterTagHandler
+	passwords        map[string]empty
 	errorCodeHandler errorCodeHandler
 	callbacks        map[string]callbackHandler
 	sanitize         []string
 	logger           logger.ILogger
-	validateAll      bool
+	canValidateAll   bool
 }
 
 type argument struct {
@@ -47,6 +53,8 @@ type callbackHandler func(context *ValidatorContext, validationData *ValidationD
 type beforeTagHandler func(context *ValidatorContext, validationData *ValidationData) []error
 type middleTagHandler func(context *ValidatorContext, validationData *ValidationData) []error
 type afterTagHandler func(context *ValidatorContext, validationData *ValidationData) []error
+
+type empty struct{}
 
 type ValidatorContext struct {
 	validator *Validator

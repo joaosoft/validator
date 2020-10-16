@@ -128,7 +128,7 @@ func (vc *ValidatorContext) load(value reflect.Value, errs *[]error) (err error)
 							}
 						}
 
-						if len(*errs) > 0 && !vc.validator.validateAll {
+						if len(*errs) > 0 && !vc.validator.canValidateAll {
 							return nil
 						}
 
@@ -219,7 +219,7 @@ func (vc *ValidatorContext) do(value reflect.Value, errs *[]error) (err error) {
 				return err
 			}
 
-			if len(*errs) > 0 && !vc.validator.validateAll {
+			if len(*errs) > 0 && !vc.validator.canValidateAll {
 				return nil
 			}
 
@@ -227,7 +227,7 @@ func (vc *ValidatorContext) do(value reflect.Value, errs *[]error) (err error) {
 				return err
 			}
 
-			if len(*errs) > 0 && !vc.validator.validateAll {
+			if len(*errs) > 0 && !vc.validator.canValidateAll {
 				return nil
 			}
 		}
@@ -244,7 +244,7 @@ func (vc *ValidatorContext) do(value reflect.Value, errs *[]error) (err error) {
 				return err
 			}
 
-			if len(*errs) > 0 && !vc.validator.validateAll {
+			if len(*errs) > 0 && !vc.validator.canValidateAll {
 				return nil
 			}
 		}
@@ -261,7 +261,7 @@ func (vc *ValidatorContext) do(value reflect.Value, errs *[]error) (err error) {
 				return err
 			}
 
-			if len(*errs) > 0 && !vc.validator.validateAll {
+			if len(*errs) > 0 && !vc.validator.canValidateAll {
 				return nil
 			}
 
@@ -269,7 +269,7 @@ func (vc *ValidatorContext) do(value reflect.Value, errs *[]error) (err error) {
 				return err
 			}
 
-			if len(*errs) > 0 && !vc.validator.validateAll {
+			if len(*errs) > 0 && !vc.validator.canValidateAll {
 				return nil
 			}
 		}
@@ -334,7 +334,7 @@ func (vc *ValidatorContext) execute(typ reflect.StructField, value reflect.Value
 			tag = split[1]
 		}
 
-		if onlyHandleNextErrorTag && !vc.validator.validateAll && tag != constTagError {
+		if onlyHandleNextErrorTag && !vc.validator.canValidateAll && tag != constTagError {
 			continue
 		}
 
@@ -473,7 +473,7 @@ func (vc *ValidatorContext) execute(typ reflect.StructField, value reflect.Value
 			err = vc.executeHandlers(tag, &validationData, &itErrs)
 		}
 
-		if onlyHandleNextErrorTag && !vc.validator.validateAll && tag == constTagError {
+		if onlyHandleNextErrorTag && !vc.validator.canValidateAll && tag == constTagError {
 			if err == ErrorSkipValidation {
 				skipValidation = true
 				continue
@@ -492,12 +492,12 @@ func (vc *ValidatorContext) execute(typ reflect.StructField, value reflect.Value
 		}
 
 		if len(*errs) > 0 {
-			if !onlyHandleNextErrorTag && !vc.validator.validateAll && tag != constTagError {
+			if !onlyHandleNextErrorTag && !vc.validator.canValidateAll && tag != constTagError {
 				onlyHandleNextErrorTag = true
 				continue
 			}
 
-			if !vc.validator.validateAll {
+			if !vc.validator.canValidateAll {
 				return nil
 			}
 		}

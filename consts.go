@@ -40,6 +40,7 @@ const (
 	constTagAlpha      = "alpha"
 	constTagNumeric    = "numeric"
 	constTagBool       = "bool"
+	constTagPassword   = "password"
 	constTagArgs       = "args"
 	constTagContains   = "contains"
 	constTagPrefix     = "prefix"
@@ -75,5 +76,5 @@ const (
 	constConditionKo = "ko"
 
 	constParenthesesStart = "("
-	constParenthesesEnd = ")"
+	constParenthesesEnd   = ")"
 )
