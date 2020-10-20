@@ -5,7 +5,7 @@ const (
 	constTagReplaceStart   = "{{"
 	constTagReplaceEnd     = "{{"
 	constTagReplaceIdStart = "{"
-	constTagReplaceIdEnd   = "{"
+	constTagReplaceIdEnd   = "}"
 
 	constRegexForReplaceId = "^" + constTagReplaceIdStart + "[A-Za-z0-9_-]+:?([A-Za-z0-9_-]+;?)+" + constTagReplaceIdEnd + "$"
 	constRegexForReplace   = "^" + constTagReplaceStart + "[A-Za-z0-9_-]+:?([A-Za-z0-9_-]+;?)+" + constTagReplaceEnd + "$"
