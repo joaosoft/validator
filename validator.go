@@ -1,11 +1,7 @@
 package validator
 
 import (
-	"bufio"
 	"github.com/joaosoft/logger"
-	"io"
-	"os"
-	"strings"
 )
 
 func NewValidator() *Validator {
@@ -38,37 +34,6 @@ func (v *Validator) newActiveHandlers() map[string]empty {
 	}
 
 	return handlers
-}
-
-func (v *Validator) loadPasswords() (_ map[string]empty, err error) {
-	passwords := make(map[string]empty)
-	var file *os.File
-
-	file, err = os.Open("./conf/passwords.txt")
-	if err != nil {
-		return passwords, err
-	}
-	defer file.Close()
-
-	reader := bufio.NewReader(file)
-	var line string
-	for {
-		line, err = reader.ReadString('\n')
-		if err != nil && err != io.EOF {
-			break
-		}
-
-		passwords[strings.TrimSuffix(line, "\n")] = empty{}
-
-		if err != nil {
-			break
-		}
-	}
-	if err != io.EOF {
-		return passwords, err
-	}
-
-	return passwords, nil
 }
 
 func (v *Validator) AddBefore(name string, handler beforeTagHandler) *Validator {
@@ -106,6 +71,12 @@ func (v *Validator) SetValidateAll(canValidateAll bool) *Validator {
 
 func (v *Validator) SetTag(tag string) *Validator {
 	v.tag = tag
+
+	return v
+}
+
+func (v *Validator) SetPwdSettings(settings *PwdSettings) *Validator {
+	v.pwd.settings = settings
 
 	return v
 }

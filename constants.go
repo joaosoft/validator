@@ -77,4 +77,22 @@ const (
 
 	constParenthesesStart = "("
 	constParenthesesEnd   = ")"
+
+	constPwdCheckNumber      = "number"
+	constPwdCheckLetter      = "letter"
+	constPwdCheckSpace       = "space"
+	constPwdCheckUpper       = "upper"
+	constPwdCheckLower       = "lower"
+	constPwdCheckSymbol      = "symbol"
+	constPwdCheckPunctuation = "punctuation"
+	constPwdBlackListFile    = "./conf/pwd_black_list.txt"
+
+	constMinNumeric     = 1
+	constMinLetter      = 1
+	constMinLower       = 1
+	constMinUpper       = 1
+	constMinSpace       = 0
+	constMinSymbol      = 0
+	constMinPunctuation = 1
+	constMinLength      = 8
 )

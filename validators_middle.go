@@ -627,7 +627,7 @@ func (v *Validator) validate_bool(context *ValidatorContext, validationData *Val
 	return rtnErrs
 }
 
-func (v *Validator) validate_password(context *ValidatorContext, validationData *ValidationData) []error {
+func (v *Validator) validate_password(context *ValidatorContext, validationData *ValidationData) (errs []error) {
 	isNil, _, value := v._getValue(validationData.Value)
 	strValue := v._convertToString(value)
 
@@ -635,13 +635,7 @@ func (v *Validator) validate_password(context *ValidatorContext, validationData 
 		return nil
 	}
 
-	if _, ok := v.passwords[strings.ToLower(strings.TrimSpace(strValue))]; ok {
-		return []error{
-			fmt.Errorf("the value [%+v] on field [%s] should be a valid Password", value, validationData.Name),
-		}
-	}
-
-	return nil
+	return v.pwd.settings.Compare(strValue)
 }
 
 func (v *Validator) validate_prefix(context *ValidatorContext, validationData *ValidationData) []error {

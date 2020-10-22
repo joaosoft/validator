@@ -283,7 +283,7 @@ func main() {
 		EmptyArrayString:        []string{"text", "text"},
 		EmptyArrayInt:           []int{1, 2},
 		PasswordCheckError1:     "password",
-		PasswordCheckError2:     "valid",
+		PasswordCheckError2:     "invalid",
 		PasswordCheckOk1:        "bananas",
 		Brothers: []Example2{
 			Example2{

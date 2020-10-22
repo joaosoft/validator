@@ -28,6 +28,10 @@ func SetSanitize(sanitize []string) *Validator {
 	return validatorInstance.SetSanitize(sanitize)
 }
 
+func SetPwdSettings(settings *PwdSettings) *Validator {
+	return validatorInstance.SetPwdSettings(settings)
+}
+
 func AddCallback(name string, callback callbackHandler) *Validator {
 	return validatorInstance.AddCallback(name, callback)
 }
