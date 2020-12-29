@@ -552,12 +552,12 @@ func timingManualValidation() {
 ```go
 BEFORE SET: 123
 BEFORE NEXT SET: 123
-BEFORE TRIM:      aqui       TEM     espaços    !!   
-BEFORE KEY:      AQUI       TEM     ESPACOS    !!   
-BEFORE FROM KEY: 
-BEFORE UPPER:      aqui       TEM     espaços    !!   
-BEFORE LOWER:      AQUI       TEM     ESPACOS    !!   
-BEFORE DISTINCT INT POINTER: [0xc0000182e8 0xc0000182e8 0xc000018300 0xc000018300]
+BEFORE TRIM:      aqui       TEM     espaços    !!
+BEFORE KEY:      AQUI       TEM     ESPACOS    !!
+BEFORE FROM KEY:
+BEFORE UPPER:      aqui       TEM     espaços    !!
+BEFORE LOWER:      AQUI       TEM     ESPACOS    !!
+BEFORE DISTINCT INT POINTER: [0xc000145578 0xc000145578 0xc000145580 0xc000145580]
 BEFORE DISTINCT INT: [1 1 2 2]
 BEFORE DISTINCT STRING: [a a b b]
 BEFORE DISTINCT BOOL: [true true false false]
@@ -569,83 +569,85 @@ BEFORE EMPTY ARRAY TEXT: [text text]
 BEFORE EMPTY ARRAY INT: [1 2]
 there are the following arguments [a b c]!
 
-ERRORS: 39
+ERRORS: 41
 
-ERROR: the value [JESSICA] is different of the expected [joao] on field [Name]
-ERROR: the value [JESSICA] is different of the expected [joao] on field [Name]
-ERROR: the length [6] is lower then the expected [5] on field [Array] value [123456]
-ERROR: the length [7] is lower then the expected [5] on field [Array] value [1234567]
-ERROR: the length [6] is lower then the expected [5] on field [Array3] value [123456]
-ERROR: the length [7] is lower then the expected [5] on field [Array3] value [1234567]
-ERROR: the length [7] is lower then the expected [5] on field [Map4] value [1234567]
-ERROR: the length [6] is lower then the expected [5] on field [Map4] value [123456]
+ERROR: invalid value
+ERROR: invalid value
+ERROR: invalid value
+ERROR: invalid value
+ERROR: invalid value
+ERROR: invalid value
+ERROR: invalid value
+ERROR: invalid value
+ERROR: invalid value
 ERROR: error 1: a:a, b:b
 ERROR: error 1: a:a, b:b
-ERROR: the value [10] is different of the expected [30] on field [Age]
 ERROR: error 3
 ERROR: error 5
 ERROR: error 6
 ERROR: error 7
 ERROR: error 8
 ERROR: error 9
-ERROR: the value [11] shouldn't be equal to the excluded options [11;22;33] on field [NotOption]
-ERROR: the value [22] shouldn't be equal to the excluded options [11;22;33] on field [NotOption]
-ERROR: the value [33] shouldn't be equal to the excluded options [11;22;33] on field [NotOption]
+ERROR: invalid value
+ERROR: invalid value
+ERROR: invalid value
 ERROR: error 10
 ERROR: error 11
 ERROR: error 17
 ERROR: error 17
 ERROR: error 19
-ERROR: the value [invalid] on field [UUID] should be a valid UUID
-ERROR: the value [google.com] on field [Url] should be a valid Url
+ERROR: invalid value
+ERROR: invalid value
 ERROR: error 17
 ERROR: error 19
-ERROR: the value [password_errada] is different of the expected [password] on field [PasswordConfirm]
-ERROR: the value [30] is different of the expected [10] on field [MyValidate]
-ERROR: 20
+ERROR: invalid value
+ERROR: invalid value
 ERROR: error 21
-ERROR: the expected [A] should be different of the [A] on field [NotMatch2]
-ERROR: the value [123] is invalid for type alphanumeric on field [TypeAlpha] value [123]
-ERROR: the value [ABC] is invalid for type numeric on field [TypeNumeric] value [ABC]
-ERROR: the value [ERRADO] is invalid for type bool on field [TypeBool] value [ERRADO]
-ERROR: the value should be null on field [ShouldBeNull] instead of [should be null]
-ERROR: the value shouldn't be null on field [ShouldNotBeNull]
+ERROR: invalid value
+ERROR: invalid value
+ERROR: invalid value
+ERROR: invalid value
+ERROR: invalid value
+ERROR: invalid value
+ERROR: invalid value
+ERROR: invalid value
+ERROR: invalid value
 
 AFTER SET: 321
 AFTER NEXT SET: 321
 AFTER TRIM: aqui TEM espaços !!
-AFTER KEY: 
+AFTER KEY:
 AFTER FROM KEY: aaaaa-3245-79-tem-espacos-
 
-AFTER LOWER:      aqui       tem     espacos    !!   
+AFTER LOWER:      aqui       tem     espacos    !!
 
-AFTER UPPER:      AQUI       TEM     ESPAÇOS    !!   
-AFTER DISTINCT INT POINTER: [0xc0000182e8 0xc000018300]
+AFTER UPPER:      AQUI       TEM     ESPAÇOS    !!
+AFTER DISTINCT INT POINTER: [0xc000145578 0xc000145580]
 AFTER DISTINCT INT: [1 2]
 AFTER DISTINCT STRING: [a b]
 AFTER DISTINCT BOOL: [true false]
 AFTER DISTINCT FLOAT: [1.1 1.2]
 AFTER DISTINCT ARRAY2: [111 222]
-AFTER EMPTY TEXT: 
+AFTER EMPTY TEXT:
 AFTER EMPTY INT: 0
 AFTER EMPTY ARRAY TEXT: []
 AFTER EMPTY ARRAY INT: []
 FIRST MD5: d41d8cd98f00b204e9800998ecf8427e
 SECOND MD5: 2fe04e524ba40505a82e03a2819429cc
-RANDOM: Ç Ówl Òncq Okèxâ Ònsqçd 897
-RANDOM BY ARG: I Wôa Émãô Xdâkã Vfùìbp 412
-RANDOM BY ARG CLEAN: 
+RANDOM: F Âuù Ômâd Oâìlè Mbmvóà 571
+RANDOM BY ARG: R Fxv Rééõ Lãéõâ Jlyéoô 181
+RANDOM BY ARG CLEAN:
 LAST NAME: ribeiro
 LAST NAME 2: ribeiro
 
 ERRORS: 2
 
-ERROR: the value shouldn't be empty on field [Data]
-ERROR: the value shouldn't be empty on field [Array]
+ERROR: invalid value
+ERROR: invalid value
 -> timing with validator
-Elapsed time: 0.000231
+Elapsed time: 0.000334
 -> timing without validator
-Elapsed time: 0.000110
+Elapsed time: 0.000114
 ```
 
 ## Known issues

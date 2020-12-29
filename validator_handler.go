@@ -62,6 +62,10 @@ func (vc *ValidatorContext) handleValidation(value interface{}) []error {
 }
 
 func (vc *ValidatorContext) _getValue(value reflect.Value) (reflect.Type, reflect.Value, error) {
+	if !value.IsValid() {
+		return nil, value, ErrorInvalidValue
+	}
+
 	typ := value.Type()
 
 again:
@@ -339,7 +343,7 @@ func (vc *ValidatorContext) execute(typ reflect.StructField, value reflect.Value
 		}
 
 		if _, ok := vc.validator.activeHandlers[tag]; !ok {
-			return fmt.Errorf("invalid tag [%s]", tag)
+			return ErrorInvalidTag.Format(tag)
 		}
 
 		var expected interface{}
@@ -456,7 +460,7 @@ func (vc *ValidatorContext) execute(typ reflect.StructField, value reflect.Value
 
 		default:
 			if prefix != "" {
-				return fmt.Errorf("invalid tag prefix [%s] on tag [%s]", prefix, tag)
+				return ErrorInvalidTagPrefix.Format(prefix, tag)
 			}
 
 			validationData := ValidationData{

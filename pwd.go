@@ -2,7 +2,6 @@ package validator
 
 import (
 	"bufio"
-	"fmt"
 	"io"
 	"os"
 	"strings"
@@ -88,36 +87,18 @@ func (p *PwdSettings) Compare(value string) (errs []error) {
 
 	newCheck.check(value)
 
-	if newCheck.MinNumeric < p.MinNumeric {
-		errs = append(errs, fmt.Errorf("the value should have [%d] numeric caracters", p.MinNumeric))
-	}
-
-	if newCheck.MinUpper < p.MinUpper {
-		errs = append(errs, fmt.Errorf("the value should have [%d] upper caracters", p.MinUpper))
-	}
-
-	if newCheck.MinLower < p.MinLower {
-		errs = append(errs, fmt.Errorf("the value should have [%d] lower caracters", p.MinLower))
-	}
-
-	if newCheck.MinLetter < p.MinLetter {
-		errs = append(errs, fmt.Errorf("the value should have [%d] letter caracters", p.MinLetter))
-	}
-
-	if newCheck.MinSpace < p.MinSpace {
-		errs = append(errs, fmt.Errorf("the value should have [%d] space caracters", p.MinSpace))
-	}
-
-	if newCheck.MinSymbol < p.MinSymbol {
-		errs = append(errs, fmt.Errorf("the value should have [%d] symbol caracters", newCheck.MinSymbol))
-	}
-
-	if newCheck.MinPunctuation < p.MinPunctuation {
-		errs = append(errs, fmt.Errorf("the value should have [%d] punctuation caracters", p.MinPunctuation))
+	if newCheck.MinNumeric < p.MinNumeric ||
+		newCheck.MinUpper < p.MinUpper ||
+		newCheck.MinLower < p.MinLower ||
+		newCheck.MinLetter < p.MinLetter ||
+		newCheck.MinSpace < p.MinSpace ||
+		newCheck.MinSymbol < p.MinSymbol ||
+		newCheck.MinPunctuation < p.MinPunctuation {
+		return []error{ErrorInvalidValue}
 	}
 
 	if _, ok := p.BlackList[strings.ToLower(strings.TrimSpace(value))]; ok {
-		errs = append(errs, fmt.Errorf("the value [%+v] is blacklisted", value))
+		return []error{ErrorInvalidValue}
 	}
 
 	return errs

@@ -2,7 +2,6 @@ package validator
 
 import (
 	"errors"
-	"fmt"
 	"regexp"
 	"strings"
 )
@@ -51,7 +50,7 @@ func (v *Validator) validate_error(context *ValidatorContext, validationData *Va
 
 			split := strings.SplitN(expected, ":", 2)
 			if len(split) == 0 {
-				rtnErrs = append(rtnErrs, fmt.Errorf("invalid tag error defined [%s]", expected))
+				rtnErrs = append(rtnErrs, ErrorInvalidTagArgument.Format(expected))
 				continue
 			}
 
