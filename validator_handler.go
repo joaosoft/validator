@@ -62,16 +62,16 @@ func (vc *ValidatorContext) handleValidation(value interface{}) []error {
 }
 
 func (vc *ValidatorContext) _getValue(value reflect.Value) (reflect.Type, reflect.Value, error) {
-	types := reflect.TypeOf(value.Interface())
+	typ := value.Type()
 
 again:
 	if (value.Kind() == reflect.Ptr || value.Kind() == reflect.Interface) && !value.IsNil() {
 		value = value.Elem()
-		types = value.Type()
+		typ = value.Type()
 		goto again
 	}
 
-	return types, value, nil
+	return typ, value, nil
 }
 
 func (vc *ValidatorContext) load(value reflect.Value, errs *[]error) (err error) {
