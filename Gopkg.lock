@@ -3,19 +3,19 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:38475a1833cb68e1775c03df3774bf725be633d6810626f0f1a850a4a8835276"
+  digest = "1:b0b8e1f9c70074785ae3c9a1a17a70fa71f1ea57ab33c8f9a533b0e2b035cf30"
   name = "github.com/joaosoft/errors"
   packages = ["."]
   pruneopts = "UT"
-  revision = "02dc200db4a1a854c348c147acfd380cbeda32b3"
+  revision = "063d59ab641c2a5e44549624c790c2d59cc1152c"
 
 [[projects]]
   branch = "master"
-  digest = "1:104098288eba572897274628b3b2b69ed7cd617cfff0df6af4a7fffb4d2bca81"
+  digest = "1:0a0bf8ecb69ffa9c68178b0203f41f1dda4c62854dbdcdcc4d6b2771e37e78cf"
   name = "github.com/joaosoft/logger"
   packages = ["."]
   pruneopts = "UT"
-  revision = "dcb22bea7505b8cf7436555b3eef9ba9ad621c7d"
+  revision = "4168033d43f324aad57cae03052925d545f61a69"
 
 [[projects]]
   branch = "master"
@@ -33,21 +33,13 @@
   pruneopts = "UT"
   revision = "b2ce2384e17bbe0c6d34077efa39dbab3e09123b"
 
-[[projects]]
-  digest = "1:d7f1bd887dc650737a421b872ca883059580e9f8314d601f88025df4f4802dce"
-  name = "gopkg.in/yaml.v2"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "0b1645d91e851e735d3e23330303ce81f70adbe3"
-  version = "v2.3.0"
-
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/joaosoft/errors",
     "github.com/joaosoft/logger",
     "github.com/satori/go.uuid",
-    "gopkg.in/yaml.v2",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1
