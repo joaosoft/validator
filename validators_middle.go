@@ -471,7 +471,7 @@ func (v *Validator) validate_is_empty(context *ValidatorContext, validationData 
 	case reflect.Bool:
 		isZero = obj.Bool() == false
 	case reflect.Struct:
-		if !reflect.DeepEqual(value, reflect.New(obj.Type()).Interface()) {
+		if reflect.DeepEqual(value, reflect.New(obj.Type()).Interface()) {
 			isZero = true
 		}
 	default:
