@@ -1,4 +1,4 @@
-module validator
+module github.com/joaosoft/validator
 
 go 1.17
 
