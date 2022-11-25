@@ -3,7 +3,8 @@ package main
 import (
 	"fmt"
 	"time"
-	"validator"
+
+	"github.com/joaosoft/validator"
 
 	"errors"
 
@@ -204,7 +205,7 @@ var dummy_args_callback = func(context *validator.ValidatorContext, validationDa
 func main() {
 	intVal1 := 1
 	intVal2 := 2
-	id, _ := uuid.NewV4()
+	id := uuid.NewV4()
 	str := "should be null"
 	byts := [16]byte{}
 	copy(byts[:], "1234567890123456")

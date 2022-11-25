@@ -71,7 +71,7 @@ func (v *Validator) validate_if(context *ValidatorContext, validationData *Valid
 				// get next operator
 				var oper operator
 				if index := strings.Index(str[i+1:], constParenthesesStart); index > -1 {
-					oper = operator(strings.TrimSpace(str[i+1 : i+1+index]))
+					oper = operator(strings.ToLower(strings.TrimSpace(str[i+1 : i+1+index])))
 
 					str = str[i+1+index:]
 					i = 0
