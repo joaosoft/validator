@@ -1,11 +1,14 @@
 module github.com/joaosoft/validator
 
-go 1.17
+go 1.20
 
 require (
-	github.com/joaosoft/errors v0.0.0-20210812105947-862fef16de4d
-	github.com/joaosoft/logger v0.0.0-20210812110414-b60fd70ff0b8
+	github.com/joaosoft/errors v0.0.0-20230531141818-ebb38600b462
+	github.com/joaosoft/logger v0.0.0-20230531142423-425740d16c0a
 	github.com/satori/go.uuid v1.2.0
 )
 
-require github.com/joaosoft/writers v0.0.0-20210812101356-becb38cb2fa6 // indirect
+require (
+	github.com/joaosoft/writers v0.0.0-20230531142123-83465954fcda // indirect
+	github.com/kr/text v0.2.0 // indirect
+)

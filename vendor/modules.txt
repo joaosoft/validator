@@ -1,12 +1,14 @@
-# github.com/joaosoft/errors v0.0.0-20210812105947-862fef16de4d
-## explicit; go 1.16
+# github.com/joaosoft/errors v0.0.0-20230531141818-ebb38600b462
+## explicit; go 1.20
 github.com/joaosoft/errors
-# github.com/joaosoft/logger v0.0.0-20210812110414-b60fd70ff0b8
-## explicit; go 1.16
+# github.com/joaosoft/logger v0.0.0-20230531142423-425740d16c0a
+## explicit; go 1.20
 github.com/joaosoft/logger
-# github.com/joaosoft/writers v0.0.0-20210812101356-becb38cb2fa6
-## explicit; go 1.16
+# github.com/joaosoft/writers v0.0.0-20230531142123-83465954fcda
+## explicit; go 1.20
 github.com/joaosoft/writers
+# github.com/kr/text v0.2.0
+## explicit
 # github.com/satori/go.uuid v1.2.0
 ## explicit
 github.com/satori/go.uuid
