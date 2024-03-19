@@ -8,15 +8,15 @@ import (
 	"unicode"
 )
 
-func (v *Validator) initPwd() {
+func (v *Validator) initPassword() {
 	var err error
-	blackList, err := initPwdBlackList()
+	blackList, err := initPasswordBlackList()
 	if err != nil {
 		v.logger.Info(err)
 	}
 
-	v.pwd = &pwd{
-		settings: &PwdSettings{
+	v.password = &password{
+		settings: &PasswordSettings{
 			MinNumeric:     constMinNumeric,
 			MinUpper:       constMinUpper,
 			MinLower:       constMinLower,
@@ -29,11 +29,11 @@ func (v *Validator) initPwd() {
 		},
 	}
 }
-func initPwdBlackList() (_ map[string]empty, err error) {
+func initPasswordBlackList() (_ map[string]empty, err error) {
 	blackList := make(map[string]empty)
 	var file *os.File
 
-	file, err = os.Open(constPwdBlackListFile)
+	file, err = os.Open(constPasswordBlackListFile)
 	if err != nil {
 		return blackList, err
 	}
@@ -60,7 +60,7 @@ func initPwdBlackList() (_ map[string]empty, err error) {
 	return blackList, nil
 }
 
-func (p *PwdSettings) check(value string) {
+func (p *PasswordSettings) check(value string) {
 	for _, ch := range value {
 		switch {
 		case unicode.IsNumber(ch):
@@ -82,8 +82,8 @@ func (p *PwdSettings) check(value string) {
 	}
 }
 
-func (p *PwdSettings) Compare(value string) (errs []error) {
-	newCheck := &PwdSettings{}
+func (p *PasswordSettings) Compare(value string) (errs []error) {
+	newCheck := &PasswordSettings{}
 
 	newCheck.check(value)
 

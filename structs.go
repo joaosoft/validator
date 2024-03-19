@@ -10,7 +10,8 @@ func (v *Validator) init() {
 	v.handlersMiddle = v.newDefaultMiddleHandlers()
 	v.handlersAfter = v.newDefaultPosHandlers()
 	v.activeHandlers = v.newActiveHandlers()
-	v.initPwd()
+
+	v.initPassword()
 }
 
 type Validator struct {
@@ -19,7 +20,7 @@ type Validator struct {
 	handlersBefore   map[string]beforeTagHandler
 	handlersMiddle   map[string]middleTagHandler
 	handlersAfter    map[string]afterTagHandler
-	pwd              *pwd
+	password         *password
 	errorCodeHandler errorCodeHandler
 	callbacks        map[string]callbackHandler
 	sanitize         []string
@@ -27,11 +28,11 @@ type Validator struct {
 	canValidateAll   bool
 }
 
-type pwd struct {
-	settings *PwdSettings
+type password struct {
+	settings *PasswordSettings
 }
 
-type PwdSettings struct {
+type PasswordSettings struct {
 	MinNumeric     int
 	MinLetter      int
 	MinUpper       int
@@ -78,7 +79,6 @@ type baseData struct {
 
 type ValidationData struct {
 	*baseData
-	Code           string
 	Field          string
 	Parent         reflect.Value
 	Value          reflect.Value

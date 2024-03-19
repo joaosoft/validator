@@ -19,16 +19,6 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-func (v *Validator) validate_not_empty(context *ValidatorContext, validationData *ValidationData) []error {
-	rtnErrs := make([]error, 0)
-
-	if errs := v.validate_is_empty(context, validationData); len(errs) == 0 {
-		rtnErrs = append(rtnErrs, ErrorInvalidValue)
-	}
-
-	return rtnErrs
-}
-
 func (v *Validator) validate_is_null(context *ValidatorContext, validationData *ValidationData) []error {
 	rtnErrs := make([]error, 0)
 
