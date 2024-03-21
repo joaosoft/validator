@@ -2,8 +2,8 @@ github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ3
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/joaosoft/errors v0.0.0-20230531141818-ebb38600b462 h1:FH9gGVdSVA9ERuIlyYI4+U36FZtSMulMzID37MdLfGc=
 github.com/joaosoft/errors v0.0.0-20230531141818-ebb38600b462/go.mod h1:/dazfOGZSVYLVcrKzAJATbOhYm+/9BNoS5ZDzKz+ltI=
-github.com/joaosoft/logger v0.0.0-20230531142423-425740d16c0a h1:4k2O1+jScsALBCkWiy5lXtW7o/78LZ89/Ag/EB5ujqc=
-github.com/joaosoft/logger v0.0.0-20230531142423-425740d16c0a/go.mod h1:xhFyqfT2p8E7qK6UXhv2U0tFuMOTeOR7Un1v5hoX7Gs=
+github.com/joaosoft/logger v0.0.0-20240321164508-fe379344de3b h1:ZUoPEkz6DEnCoY6xUC+qB3oPTu6knCeJJC6/cNxRzs0=
+github.com/joaosoft/logger v0.0.0-20240321164508-fe379344de3b/go.mod h1:xhFyqfT2p8E7qK6UXhv2U0tFuMOTeOR7Un1v5hoX7Gs=
 github.com/joaosoft/writers v0.0.0-20230531142123-83465954fcda h1:2qopUF9Y7UHkjFcZnmSD1nqlgQvZ0m15zdQL5UjemFE=
 github.com/joaosoft/writers v0.0.0-20230531142123-83465954fcda/go.mod h1:Ycm4M3XU0GDGFDdP03GTlBAgB8R8ZjevPKvZYdhpDeQ=
 github.com/kr/pretty v0.3.1 h1:flRD4NNwYAUpkphVc1HcthR4KEIFJ65n8Mw5qdRn3LE=

@@ -9,7 +9,7 @@ func NewValidator() *Validator {
 		tag:       constDefaultValidationTag,
 		callbacks: make(map[string]callbackHandler),
 		sanitize:  make([]string, 0),
-		logger:    logger.NewLogDefault(constDefaultLogTag, logger.InfoLevel),
+		logger:    logger.NewLogDefault(constDefaultLogTag, logger.LevelInfo),
 	}
 
 	v.init()
